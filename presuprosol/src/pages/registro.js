@@ -1,0 +1,193 @@
+import React, { useState } from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import Header from "@/components/Header";
+import { registrarSolicitudAcceso } from "@/pages/api/registroUsuario";
+import styles from "@/styles/Login.module.css";
+
+export default function Registro() {
+  const router = useRouter();
+  const [usuario, setUsuario] = useState("");
+  const [email, setEmail] = useState("");
+  const [cif, setCif] = useState("");
+  const [pass, setPass] = useState("");
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const show = (type, msg) => setAlert({ type, msg });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setAlert(null);
+
+    registrarSolicitudAcceso({ usuario, email, cif, pass })
+      .then(() => {
+        show(
+          "ok",
+          "✅ ¡Solicitud enviada con éxito! Un administrador revisará tu acceso y te notificaremos por correo electrónico."
+        );
+
+        // Limpiar formulario
+        setUsuario("");
+        setEmail("");
+        setCif("");
+        setPass("");
+
+        // Redirigir al inicio después de 2 segundos
+        setTimeout(() => {
+          router.push("/");
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error("[REGISTRO] ❌ Error en registro:", err);
+
+        const msg = err?.message || "";
+
+        if (msg.includes("User already registered")) {
+          show(
+            "error",
+            "❌ Este correo electrónico ya está registrado. Por favor, inicia sesión."
+          );
+        } else if (msg.includes("Password should be at least")) {
+          show(
+            "error",
+            "❌ La contraseña debe tener al menos 6 caracteres."
+          );
+        } else if (msg.includes("Invalid email")) {
+          show("error", "❌ El correo electrónico no es válido.");
+        } else if (msg.includes("Email rate limit exceeded")) {
+          show(
+            "error",
+            "⚠️ Demasiados intentos. Por favor, espera unos minutos e intenta de nuevo."
+          );
+        } else if (msg.includes("duplicate key")) {
+          show(
+            "error",
+            "⚠️ Este usuario ya existe en el sistema. Por favor, inicia sesión."
+          );
+        } else {
+          show(
+            "error",
+            "❌ No se pudo completar el registro. Por favor, intenta de nuevo."
+          );
+        }
+
+        setLoading(false);
+      });
+  };
+
+  return (
+    <>
+      <Head>
+        <title>Solicitar acceso · PresuProsol</title>
+      </Head>
+
+      <Header />
+
+      <main className={styles.loginContainer}>
+        <div className={styles.loginBox}>
+          <h1 className={styles.loginTitle}>Solicitar acceso</h1>
+          <p className={styles.loginSubtitle}>
+            Rellena tus datos. Revisaremos tu solicitud lo antes posible y te
+            notificaremos cuando tu cuenta esté activa.
+          </p>
+
+          {alert && (
+            <div
+              className={`${styles.alert} ${
+                alert.type === "ok" ? styles.alertSuccess : styles.alertDanger
+              }`}
+              role="alert"
+            >
+              <div>{alert.msg}</div>
+            </div>
+          )}
+
+          <div className={styles.loginCard}>
+            <form onSubmit={handleSubmit}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Nombre de usuario</label>
+                <input
+                  type="text"
+                  className={styles.formControl}
+                  placeholder="Introduce tu nombre de usuario"
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Correo electrónico</label>
+                <input
+                  type="email"
+                  className={styles.formControl}
+                  placeholder="ejemplo@correo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+                <small className={styles.formText}>
+                  Recibirás un correo de confirmación en esta dirección
+                </small>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>CIF / NIF</label>
+                <input
+                  type="text"
+                  className={styles.formControl}
+                  placeholder="B12345678 o 12345678A"
+                  value={cif}
+                  onChange={(e) => setCif(e.target.value.toUpperCase())}
+                  required
+                  disabled={loading}
+                  pattern="[A-Z0-9]{8,9}"
+                  title="Introduce un CIF o NIF válido (8-9 caracteres)"
+                />
+                <small className={styles.formText}>
+                  Formato: B12345678 (CIF) o 12345678A (NIF)
+                </small>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Contraseña</label>
+                <input
+                  type="password"
+                  className={styles.formControl}
+                  placeholder="Mínimo 6 caracteres"
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+                <small className={styles.formText}>
+                  Debe tener al menos 6 caracteres
+                </small>
+              </div>
+
+              <button
+                type="submit"
+                className={styles.loginButton}
+                disabled={loading}
+              >
+                {loading ? "⏳ Enviando solicitud..." : "📝 Solicitar acceso"}
+              </button>
+            </form>
+          </div>
+
+          <div className={styles.loginFooterText}>
+            <small>
+              ¿Ya tienes cuenta? <Link href="/login">Inicia sesión</Link>
+            </small>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}

@@ -1,0 +1,193 @@
+/* Contenedor del perfil */
+.perfilContainer {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* Header con título y botones */
+.perfilHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.perfilTitle {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: clamp(28px, 3.4vw, 36px);
+  margin: 0;
+}
+
+/* Grupo de botones */
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btnOutlinePrimary {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btnOutlinePrimary:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.btnOutlineSuccess {
+  background: transparent;
+  color: #28a745;
+  border-color: #28a745;
+}
+
+.btnOutlineSuccess:hover {
+  background: #28a745;
+  color: white;
+}
+
+.btnOutlineSecondary {
+  background: transparent;
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btnOutlineSecondary:hover {
+  background: #6c757d;
+  color: white;
+}
+
+.btnOutlineWarning {
+  background: transparent;
+  color: #ffc107;
+  border-color: #ffc107;
+}
+
+.btnOutlineWarning:hover {
+  background: #ffc107;
+  color: #000;
+}
+
+/* Card del perfil */
+.perfilCard {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  padding: 32px;
+}
+
+/* Formulario */
+.form {
+  margin-top: 24px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .formRow {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .formRowFull {
+    grid-column: 1 / -1;
+  }
+}
+
+.formGroup {
+  margin-bottom: 0;
+}
+
+.formLabel {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.formControl {
+  width: 100%;
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.formControl:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.25);
+  outline: none;
+}
+
+/* Alertas */
+.alert {
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 12px 16px;
+  margin-top: 16px;
+}
+
+.alertSuccess {
+  background: #e6f9ed;
+  color: #1b7a3d;
+  border: 1px solid #b9e2c7;
+}
+
+.alertWarning {
+  background: #fff8e6;
+  color: #a37a00;
+  border: 1px solid #ffe5a3;
+}
+
+.alertDanger {
+  background: #ffe9e6;
+  color: #a3322b;
+  border: 1px solid #f2b1a8;
+}
+
+/* Botón guardar */
+.btnAccent {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background 0.2s;
+}
+
+.btnAccent:hover:not(:disabled) {
+  background: #ff9d2d;
+}
+
+.btnAccent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
