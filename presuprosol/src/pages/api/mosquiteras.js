@@ -72,6 +72,7 @@ export async function fetchMosqOptions() {
       .select("id, color, precio, precio_ml, incremento_ml, activo, hex");
 
     console.log("[API mosq_colores] status:", colStatus, "count:", col?.length, "error:", colErr);
+    console.log("[API mosq_colores] RAW DATA:", col);
 
     const colores = (col || [])
       .filter((c) => c.activo === true)
@@ -85,7 +86,7 @@ export async function fetchMosqOptions() {
         };
       });
 
-    console.log("✅ [API MOSQ] colores cargados:", colores.length);
+    console.log("✅ [API MOSQ] colores procesados:", colores.length);
     console.table(colores);
 
     // Accesorios

@@ -5,6 +5,7 @@ import Head from "next/head";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import Header from "../../components/Header";
+import styles from "../../styles/MisPresupuestos.module.css";
 
 // Importar componentes de productos
 import CompactosForm from "../../components/productos/compactos";
@@ -197,12 +198,10 @@ export default function EditarPresupuesto() {
     return (
       <>
         <Header />
-        <main className="container py-4">
-          <div className="text-center py-5">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Cargando...</span>
-            </div>
-            <p className="mt-3">Cargando presupuesto...</p>
+        <main className={styles.pageContainer}>
+          <div className={styles.loadingContainer}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loadingText}>Cargando presupuesto...</p>
           </div>
         </main>
       </>
@@ -222,121 +221,95 @@ export default function EditarPresupuesto() {
       </Head>
       <Header />
 
-      <main className="container py-4" style={{ maxWidth: 1000 }}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h1>✏️ Editar Presupuesto</h1>
+      <main className={styles.pageContainer}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>✏️ Editar Presupuesto</h1>
           <button
             onClick={() => router.push("/mis-presupuestos")}
-            className="btn btn-outline-secondary"
+            className={styles.backButton}
             disabled={guardando}
           >
             ← Cancelar
           </button>
         </div>
 
-        <div className="alert alert-info mb-4">
-          <h6 className="mb-2">📋 Información del presupuesto</h6>
-          <p className="mb-1">
+        <div className={styles.infoAlert}>
+          <h6 className={styles.infoAlertTitle}>📋 Información del presupuesto</h6>
+          <p className={styles.infoAlertText}>
             <strong>ID:</strong> {presupuesto.id.substring(0, 8)}...
           </p>
-          <p className="mb-1">
+          <p className={styles.infoAlertText}>
             <strong>Creado:</strong>{" "}
             {new Date(presupuesto.created_at).toLocaleDateString("es-ES")}
           </p>
-          <p className="mb-1">
+          <p className={styles.infoAlertText}>
             <strong>Tipo:</strong>{" "}
-            <span className="badge bg-primary">{tipoProducto.nombre}</span>
+            <span className={styles.infoAlertBadge}>{tipoProducto.nombre}</span>
           </p>
-          <p className="mb-0">
+          <p className={styles.infoAlertText} style={{ marginBottom: 0 }}>
             <strong>Cliente:</strong> {presupuesto.cliente || "Sin nombre"}
           </p>
         </div>
 
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title mb-4">
-              Modificar datos de {tipoProducto.nombre}
-            </h5>
-            <FormularioProducto
-              datosIniciales={presupuesto}
-              onSubmit={handleGuardarPresupuesto}
-              guardando={guardando}
-              modoEdicion={true}
-            />
-          </div>
+        <div className={styles.card}>
+          <h5 className={styles.cardTitle}>
+            Modificar datos de {tipoProducto.nombre}
+          </h5>
+          <FormularioProducto
+            datosIniciales={presupuesto}
+            onSubmit={handleGuardarPresupuesto}
+            guardando={guardando}
+            modoEdicion={true}
+          />
         </div>
       </main>
 
       {/* Modal de éxito */}
       {mostrarModalExito && (
-        <div
-          className="modal d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-body text-center py-5">
-                <div
-                  className="mb-4"
-                  style={{
-                    width: 100,
-                    height: 100,
-                    margin: "0 auto",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    animation: "scaleIn 0.5s ease-out",
-                  }}
-                >
-                  <svg
-                    width="60"
-                    height="60"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ animation: "checkDraw 0.5s ease-out 0.3s forwards", strokeDasharray: 50, strokeDashoffset: 50 }}
-                  >
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
+        <div className={styles.successModal}>
+          <div className={styles.successModalContent}>
+            <div className={styles.successIcon}>
+              <svg
+                className={styles.checkIcon}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline className={styles.checkPath} points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
 
-                <h3 className="mb-3" style={{ color: "#2c3e50", fontWeight: 700 }}>
-                  ¡Presupuesto Actualizado!
-                </h3>
-                
-                <p className="text-muted mb-4" style={{ fontSize: 16 }}>
-                  Los cambios se han guardado correctamente
-                </p>
+            <h3 className={styles.successModalTitle}>
+              ¡Presupuesto Actualizado!
+            </h3>
+            
+            <p className={styles.successModalText}>
+              Los cambios se han guardado correctamente
+            </p>
 
-                <div className="alert alert-light border mb-4">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="text-muted">Cliente:</span>
-                    <strong>{presupuesto.cliente || "Sin nombre"}</strong>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="text-muted">Tipo:</span>
-                    <strong className="text-capitalize">{tipoProducto.nombre}</strong>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between">
-                    <span className="text-muted">Total:</span>
-                    <strong className="text-success" style={{ fontSize: 18 }}>
-                      {presupuesto.total?.toFixed(2)} €
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center justify-content-center gap-2 text-muted">
-                  <div className="spinner-border spinner-border-sm" role="status">
-                    <span className="visually-hidden">Redirigiendo...</span>
-                  </div>
-                  <small>Redirigiendo a tus presupuestos...</small>
-                </div>
+            <div className={styles.successModalInfo}>
+              <div className={styles.successModalRow}>
+                <span className={styles.successModalLabel}>Cliente:</span>
+                <strong className={styles.successModalValue}>{presupuesto.cliente || "Sin nombre"}</strong>
               </div>
+              <div className={styles.successModalRow}>
+                <span className={styles.successModalLabel}>Tipo:</span>
+                <strong className={styles.successModalValue}>{tipoProducto.nombre}</strong>
+              </div>
+              <div className={styles.successModalRow}>
+                <span className={styles.successModalLabel}>Total:</span>
+                <strong className={styles.successModalTotal}>
+                  {presupuesto.total?.toFixed(2)} €
+                </strong>
+              </div>
+            </div>
+
+            <div className={styles.redirectSpinner}>
+              <div className={styles.smallSpinner}></div>
+              <span>Redirigiendo a tus presupuestos...</span>
             </div>
           </div>
         </div>
@@ -344,84 +317,44 @@ export default function EditarPresupuesto() {
 
       {/* Modal de error */}
       {mostrarModalError && (
-        <div
-          className="modal d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-body text-center py-5">
-                <div
-                  className="mb-4"
-                  style={{
-                    width: 100,
-                    height: 100,
-                    margin: "0 auto",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    animation: "scaleIn 0.5s ease-out",
-                  }}
-                >
-                  <svg
-                    width="60"
-                    height="60"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                </div>
-
-                <h3 className="mb-3" style={{ color: "#2c3e50", fontWeight: 700 }}>
-                  Oops, algo salió mal
-                </h3>
-                
-                <p className="text-muted mb-4" style={{ fontSize: 16 }}>
-                  {mensajeError}
-                </p>
-
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setMostrarModalError(false);
-                    router.push("/mis-presupuestos");
-                  }}
-                >
-                  Volver a mis presupuestos
-                </button>
-              </div>
+        <div className={styles.successModal}>
+          <div className={styles.successModalContent}>
+            <div className={`${styles.successIcon} ${styles.errorIcon}`}>
+              <svg
+                className={styles.checkIcon}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
             </div>
+
+            <h3 className={styles.successModalTitle}>
+              Oops, algo salió mal
+            </h3>
+            
+            <p className={styles.successModalText}>
+              {mensajeError}
+            </p>
+
+            <button
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={() => {
+                setMostrarModalError(false);
+                router.push("/mis-presupuestos");
+              }}
+            >
+              Volver a mis presupuestos
+            </button>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes scaleIn {
-          from {
-            transform: scale(0);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes checkDraw {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-      `}</style>
 
     </>
   );

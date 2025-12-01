@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import Header from "../../components/Header";
 import { useAuth } from "../../context/AuthContext";
+import styles from "../../styles/ConfigPages.module.css";
 
 import {
   getPanoPricePerM2,
@@ -408,14 +409,14 @@ export default function ConfigPanos({
 
       {!modoEdicion && <Header />}
 
-      <main className={`container ${!modoEdicion ? "py-4" : ""}`} style={{ maxWidth: 980 }}>
+      <main className={styles.pageContainer}>
         {!modoEdicion && (
-          <div className="d-flex align-items-center justify-content-between mb-3">
-            <h1 className="h4 m-0">
+          <div className={styles.header}>
+            <h1 className={styles.title}>
               Configurar {tipo === "lamas" ? "lamas sueltas" : "paño completo"}
             </h1>
             <button
-              className="btn btn-outline-secondary"
+              className={styles.backButton}
               onClick={() => router.push("/panos")}
             >
               ← Volver
@@ -423,14 +424,14 @@ export default function ConfigPanos({
           </div>
         )}
 
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <div className="row g-3">
-              {/* Modelo */}
-              <div className="col-12 col-md-6">
-                <label className="form-label">Modelo</label>
+        <div className={styles.card}>
+          <div className={styles.formGrid}>
+            {/* Modelo y Acabado */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Modelo</label>
                 <select
-                  className="form-select"
+                  className={styles.select}
                   value={modeloId}
                   onChange={(e) => setModeloId(e.target.value)}
                 >
@@ -451,11 +452,10 @@ export default function ConfigPanos({
                 </select>
               </div>
 
-              {/* Acabado */}
-              <div className="col-12 col-md-6">
-                <label className="form-label">Acabado</label>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Acabado</label>
                 <select
-                  className="form-select"
+                  className={styles.select}
                   value={acabadoId}
                   onChange={(e) => setAcabadoId(e.target.value)}
                 >
@@ -468,233 +468,171 @@ export default function ConfigPanos({
                 </select>
 
                 {precioM2 === null && modeloId && acabadoId && (
-                  <small className="text-danger d-block mt-1">
+                  <small style={{ color: "#e53e3e", display: "block", marginTop: "0.25rem" }}>
                     Precio: consultar
                   </small>
                 )}
 
                 {precioM2 != null && modeloId && acabadoId && (
-                  <small className="text-muted d-block mt-1">
+                  <small style={{ color: "#718096", display: "block", marginTop: "0.25rem" }}>
                     Precio: {Number(precioM2).toFixed(2)} €/m²
                   </small>
                 )}
               </div>
+            </div>
 
-              {/* Medidas */}
-              <div className="col-12 col-md-6">
-                <label className="form-label">Alto (mm)</label>
+            {/* Medidas */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Alto (mm)</label>
                 <input
-                  className="form-control"
+                  className={styles.input}
                   type="number"
                   min={0}
                   value={alto}
                   onChange={(e) => setAlto(e.target.value)}
                 />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Ancho (mm)</label>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Ancho (mm)</label>
                 <input
-                  className="form-control"
+                  className={styles.input}
                   type="number"
                   min={0}
                   value={ancho}
                   onChange={(e) => setAncho(e.target.value)}
                 />
               </div>
+            </div>
 
-              {/* ACCESORIOS CON IMÁGENES */}
-              <div className="col-12">
-                <label className="form-label d-block mb-3">
-                  Accesorios
-                </label>
-                <div className="row g-3">
+            {/* Accesorios */}
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Accesorios</h2>
+              {accesorios.length === 0 && (
+                <p className={styles.emptyMessage}>No hay accesorios disponibles</p>
+              )}
+              <div className={styles.accesoriosGrid}>
                   {accesorios.map((a) => {
                     const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
                     const imgSrc = getAccesorioImagen(a.nombre);
 
                     return (
-                      <div className="col-12 col-md-6 col-lg-4" key={a.id}>
-                        <div
-                          className="card h-100 shadow-sm"
-                          style={{
-                            transition: "transform 0.2s, box-shadow 0.2s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "translateY(0)";
-                            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)";
-                          }}
-                        >
-                          {imgSrc && (
-                            <div
-                              style={{
-                                height: 180,
-                                overflow: "hidden",
-                                background: "#f8f9fa",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <img
-                                src={imgSrc}
-                                alt={a.nombre}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "contain",
-                                  padding: "0.5rem",
-                                }}
-                              />
-                            </div>
+                      <div className={styles.accesorioCard} key={a.id}>
+                        <div className={styles.accesorioImage}>
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={a.nombre}
+                              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                            />
+                          ) : (
+                            <div style={{ fontSize: "48px", color: "#dee2e6" }}>📦</div>
                           )}
-
-                          {!imgSrc && (
-                            <div
-                              style={{
-                                height: 180,
-                                overflow: "hidden",
-                                background: "#f8f9fa",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 48,
-                                color: "#dee2e6",
-                              }}
-                            >
-                              📦
-                            </div>
-                          )}
-
-                          <div className="card-body">
-                            <h6 className="card-title mb-2" style={{ fontSize: 14, fontWeight: 600 }}>
-                              {a.nombre}
-                            </h6>
-                            <p className="text-muted mb-3" style={{ fontSize: 13 }}>
-                              {Number(a.pvp || 0).toFixed(2)} € / {a.unidad}
-                            </p>
-
-                            <div className="d-flex align-items-center gap-2">
-                              <label className="form-label mb-0" style={{ fontSize: 13 }}>
-                                Unidades:
-                              </label>
-                              <input
-                                type="number"
-                                min={0}
-                                step={1}
-                                className="form-control form-control-sm"
-                                value={sel}
-                                onChange={(e) => onSetAccUnidades(a, e.target.value)}
-                                style={{ maxWidth: 80 }}
-                              />
-                            </div>
+                        </div>
+                        <div className={styles.accesorioInfo}>
+                          <div className={styles.accesorioName}>{a.nombre}</div>
+                          <div className={styles.accesorioPrecio}>
+                            {Number(a.pvp || 0).toFixed(2)} € / {a.unidad}
                           </div>
                         </div>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          className={`${styles.input} ${styles.accesorioInput}`}
+                          value={sel}
+                          onChange={(e) => onSetAccUnidades(a, e.target.value)}
+                        />
                       </div>
                     );
                   })}
                 </div>
 
                 {accSel.length > 0 && (
-                  <div className="alert alert-info mt-3 mb-0">
+                  <div className={styles.hint}>
                     💡 Total accesorios: <strong>{accTotal.toFixed(2)} €</strong>
                   </div>
                 )}
               </div>
 
-              {/* Resumen */}
-              <div className="col-12">
-                <hr />
-                <div className="d-flex flex-column gap-2">
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Área:</span>
-                    <strong className="text-muted">{areaM2.toFixed(3)} m²</strong>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Precio base:</span>
-                    <strong className="text-muted">
-                      {base.toFixed(2)} €
-                      {precioM2 === null && " (consultar)"}
-                    </strong>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Accesorios:</span>
-                    <strong className="text-muted">{accTotal.toFixed(2)} €</strong>
-                  </div>
-
-                  {descuento > 0 && (
-                    <>
-                      <div className="d-flex justify-content-between">
-                        <span className="text-muted">Subtotal:</span>
-                        <strong className="text-muted">
-                          {(base + accTotal).toFixed(2)} €
-                        </strong>
-                      </div>
-                      <div className="d-flex justify-content-between">
-                        <span className="text-muted">Descuento ({descuento}%):</span>
-                        <strong className="text-muted text-danger">
-                          -{((base + accTotal) * (descuento / 100)).toFixed(2)} €
-                        </strong>
-                      </div>
-                    </>
-                  )}
-
-                  {descuento === 0 && (
-                    <div className="d-flex justify-content-between">
-                      <span className="text-muted">Descuento cliente:</span>
-                      <strong className="text-muted">{descuento}%</strong>
-                    </div>
-                  )}
-
-                  <hr />
-                  <div className="d-flex justify-content-between fs-4">
-                    <span className="fw-bold">TOTAL:</span>
-                    <strong className="fw-bold" style={{ color: "#198754" }}>
-                      {total.toFixed(2)} €
-                    </strong>
-                  </div>
-                </div>
+            {/* Resumen */}
+            <div className={styles.summary}>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Área:</span>
+                <span className={styles.summaryValue}>{areaM2.toFixed(3)} m²</span>
+              </div>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Precio base:</span>
+                <span className={styles.summaryValue}>
+                  {base.toFixed(2)} €
+                  {precioM2 === null && " (consultar)"}
+                </span>
+              </div>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Accesorios:</span>
+                <span className={styles.summaryValue}>{accTotal.toFixed(2)} €</span>
               </div>
 
-              {msg && (
-                <div
-                  className={`col-12 alert ${
-                    msg.startsWith("✅") ? "alert-success" : "alert-warning"
-                  } mb-0`}
-                >
-                  {msg}
+              {descuento > 0 && (
+                <>
+                  <div className={styles.summaryRow}>
+                    <span className={styles.summaryLabel}>Subtotal:</span>
+                    <span className={styles.summaryValue}>
+                      {(base + accTotal).toFixed(2)} €
+                    </span>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span className={styles.summaryLabel}>Descuento ({descuento}%):</span>
+                    <span className={styles.summaryValue} style={{ color: "#e53e3e" }}>
+                      -{((base + accTotal) * (descuento / 100)).toFixed(2)} €
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {descuento === 0 && (
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Descuento cliente:</span>
+                  <span className={styles.summaryValue}>{descuento}%</span>
                 </div>
               )}
 
-              <div className="col-12">
-                <button
-                  className="btn w-100"
-                  style={{ background: "var(--accent)", color: "var(--surface)", fontWeight: 600 }}
-                  onClick={guardar}
-                  disabled={
-                    saving ||
-                    guardando ||
-                    !modeloId ||
-                    !acabadoId ||
-                    !alto ||
-                    !ancho ||
-                    precioM2 === null
-                  }
-                >
-                  {(saving || guardando) ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2"></span>
-                      {modoEdicion ? "Actualizando…" : "Guardando…"}
-                    </>
-                  ) : (
-                    <>{modoEdicion ? "💾 Guardar Cambios" : "💾 Guardar presupuesto"}</>
-                  )}
-                </button>
+              <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
+                <span className={styles.summaryLabel}>TOTAL:</span>
+                <span className={styles.summaryValue}>
+                  {total.toFixed(2)} €
+                </span>
               </div>
             </div>
+
+            {msg && (
+              <div className={msg.startsWith("✅") ? styles.alertSuccess : styles.alertWarning}>
+                {msg}
+              </div>
+            )}
+
+            <button
+              className={styles.submitButton}
+              onClick={guardar}
+              disabled={
+                saving ||
+                guardando ||
+                !modeloId ||
+                !acabadoId ||
+                !alto ||
+                !ancho ||
+                precioM2 === null
+              }
+            >
+              {(saving || guardando) ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  {modoEdicion ? "Actualizando…" : "Guardando…"}
+                </>
+              ) : (
+                <>{modoEdicion ? "💾 Guardar Cambios" : "💾 Guardar presupuesto"}</>
+              )}
+            </button>
           </div>
         </div>
       </main>

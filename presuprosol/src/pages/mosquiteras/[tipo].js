@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import Header from "../../components/Header";
 import { useAuth } from "../../context/AuthContext";
+import styles from "../../styles/ConfigPages.module.css";
 
 import {
   getMosqBasePrice,
@@ -161,41 +162,24 @@ export default function ConfigMosquitera({
 
   /* 🎨 + 🧰 Cargar colores y accesorios */
   useEffect(() => {
-    if (!tipo && !modoEdicion) {
-      console.log("⏸️ [OPCIONES MOSQ] Esperando tipo...");
-      return;
-    }
-
-    let cancelled = false;
-
     const loadOptions = async () => {
       try {
         console.log("📦 [CARGANDO CATÁLOGO MOSQ] tipo:", tipo, "modoEdicion:", modoEdicion);
         const { colores, accesorios } = await fetchMosqOptions();
-        if (!cancelled) {
-          console.log("✅ Catálogo cargado:", { colores: colores.length, accesorios: accesorios.length });
-          console.log("📝 Actualizando estados...");
-          setColores(colores || []);
-          setAccesorios(accesorios || []);
-          console.log("✔️ Estados actualizados");
-        } else {
-          console.log("⚠️ Carga cancelada - componente desmontado");
-        }
+        console.log("✅ Catálogo cargado:", { colores: colores.length, accesorios: accesorios.length });
+        console.log("🎨 COLORES recibidos:", colores);
+        console.log("📝 Actualizando estados...");
+        setColores(colores);
+        setAccesorios(accesorios);
+        console.log("✔️ Estados actualizados - colores:", colores, "accesorios:", accesorios);
       } catch (e) {
         console.error("💥 loadOptions exception:", e);
-        if (!cancelled) {
-          setColores([]);
-          setAccesorios([]);
-        }
       }
     };
 
-    loadOptions();
-
-    return () => {
-      console.log("🧹 Cleanup: cancelando carga de opciones");
-      cancelled = true;
-    };
+    if (tipo || modoEdicion) {
+      loadOptions();
+    }
   }, [tipo, modoEdicion]);
 
   /* 🎟️ Descuento cliente */
@@ -494,14 +478,14 @@ export default function ConfigMosquitera({
       </Head>
       {!modoEdicion && <Header />}
 
-      <main className={`container ${!modoEdicion ? "py-5" : ""}`} style={{ maxWidth: 1024 }}>
+      <main className={!modoEdicion ? styles.pageContainer : ""}>
         {!modoEdicion && (
-          <div className="d-flex align-items-center justify-content-between mb-4">
-            <h1 className="h4 m-0" style={{ color: "var(--primary)" }}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>
               Configurar mosquitera {tipo ? `· ${tipo}` : ""}
             </h1>
             <button
-              className="btn btn-outline-secondary"
+              className={styles.backButton}
               onClick={() => router.push("/mosquiteras")}
             >
               ← Volver
@@ -509,14 +493,14 @@ export default function ConfigMosquitera({
           </div>
         )}
 
-        <div className="card shadow-sm" style={{ borderRadius: 16 }}>
-          <div className="card-body p-4">
-            <div className="row g-4">
-              {/* Medidas */}
-              <div className="col-12 col-md-6">
-                <label className="form-label fw-semibold">Alto (mm)</label>
+        <div className={styles.card}>
+          <div className={styles.formGrid}>
+            {/* Medidas */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Alto (mm)</label>
                 <select
-                  className="form-select"
+                  className={styles.select}
                   value={alto}
                   onChange={(e) => setAlto(e.target.value)}
                 >
@@ -528,10 +512,10 @@ export default function ConfigMosquitera({
                   ))}
                 </select>
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label fw-semibold">Ancho (mm)</label>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Ancho (mm)</label>
                 <select
-                  className="form-select"
+                  className={styles.select}
                   value={ancho}
                   onChange={(e) => setAncho(e.target.value)}
                 >
@@ -543,206 +527,130 @@ export default function ConfigMosquitera({
                   ))}
                 </select>
               </div>
+            </div>
 
-              {/* Accesorios */}
-              <div className="col-12">
-                <label className="form-label fw-semibold d-block mb-3">Accesorios</label>
-                {accesorios.length === 0 && (
-                  <p className="text-muted">No hay accesorios disponibles</p>
-                )}
-                <div className="row g-3">
-                  {accesorios.map((a) => {
-                    const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
-                    const img = getAccImg(a.nombre);
-                    return (
-                      <div className="col-12 col-md-6" key={a.id}>
-                        <div className="d-flex gap-3 align-items-center border rounded p-3">
-                          <div
-                            style={{
-                              width: 60,
-                              height: 60,
-                              position: "relative",
-                              flex: "0 0 60px",
-                            }}
-                          >
-                            <Image
-                              src={img}
-                              alt={a.nombre}
-                              fill
-                              sizes="60px"
-                              style={{ objectFit: "contain", borderRadius: 8 }}
-                              unoptimized
-                            />
-                          </div>
-                          <div className="flex-fill">
-                            <div className="fw-semibold">{a.nombre}</div>
-                            <small className="text-muted">
-                              {a.precio_unit.toFixed(2)} € / {a.unidad || "ud"}
-                              {a.perimetral && " · perimetral"}
-                            </small>
-                          </div>
-                          <div style={{ minWidth: 90 }}>
-                            <input
-                              type="number"
-                              min={0}
-                              step={1}
-                              className="form-control form-control-sm"
-                              value={sel || ""}
-                              onChange={(e) => setAccUnidades(a, e.target.value)}
-                            />
-                          </div>
+            {/* Accesorios */}
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Accesorios</h2>
+              {accesorios.length === 0 && (
+                <p className={styles.emptyMessage}>No hay accesorios disponibles</p>
+              )}
+              <div className={styles.accesoriosGrid}>
+                {accesorios.map((a) => {
+                  const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
+                  const img = getAccImg(a.nombre);
+                  return (
+                    <div className={styles.accesorioCard} key={a.id}>
+                      <div className={styles.accesorioImage}>
+                        <Image
+                          src={img}
+                          alt={a.nombre}
+                          fill
+                          sizes="80px"
+                          style={{ objectFit: "contain" }}
+                          unoptimized
+                        />
+                      </div>
+                      <div className={styles.accesorioInfo}>
+                        <div className={styles.accesorioName}>{a.nombre}</div>
+                        <div className={styles.accesorioPrecio}>
+                          {a.precio_unit.toFixed(2)} € / {a.unidad || "ud"}
+                          {a.perimetral && " · perimetral"}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-                {accSel.length > 0 && (
-                  <small className="text-muted d-block mt-2">
-                    💡 Total accesorios: <strong>{accTotal.toFixed(2)} €</strong>
-                  </small>
-                )}
-              </div>
-
-              {/* Colores */}
-              <div className="col-12">
-                <label className="form-label fw-semibold d-block mb-3">Color</label>
-                {colores.length === 0 && <p className="text-muted">No hay colores disponibles</p>}
-                <div className="row g-2">
-                  {colores.map((c) => {
-                    const selected = String(c.id) === String(colorId);
-                    return (
-                      <div className="col-6 col-md-4 col-lg-3" key={c.id}>
-                        <button
-                          type="button"
-                          className={`w-100 d-flex align-items-center gap-2 border rounded p-3 ${
-                            selected ? "border-primary border-2 bg-light" : "border-1"
-                          }`}
-                          onClick={() => setColorId(selected ? "" : String(c.id))}
-                          title={c.nombre}
-                          style={{ transition: "all 0.2s ease" }}
-                        >
-                          <span
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: "50%",
-                              backgroundColor: c.hex || guessHexFromName(c.nombre),
-                              border:
-                                (c.hex || "").toUpperCase() === "#FFFFFF"
-                                  ? "1px solid #ddd"
-                                  : "1px solid rgba(0,0,0,0.05)",
-                              boxShadow: selected
-                                ? "0 0 0 3px rgba(99,102,241,0.35)"
-                                : "none",
-                              display: "inline-block",
-                            }}
-                          />
-                          <div className="text-start flex-fill">
-                            <div className="fw-semibold small">{c.nombre}</div>
-                            <small className="text-muted">
-                              +{c.incremento_eur_ml.toFixed(2)} €/ml
-                            </small>
-                          </div>
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-                {colorActual && alto && ancho && (
-                  <small className="text-muted d-block mt-2">
-                    💡 Incremento por color: <strong>{incColor.toFixed(2)} €</strong>
-                  </small>
-                )}
-              </div>
-
-              {/* Resumen */}
-              <div className="col-12">
-                <hr />
-                <div className="d-flex flex-column gap-2">
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Precio base:</span>
-                    <strong className="text-muted">{precioBase.toFixed(2)} €</strong>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Color:</span>
-                    <strong className="text-muted">{incColor.toFixed(2)} €</strong>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <span className="text-muted">Accesorios:</span>
-                    <strong className="text-muted">{accTotal.toFixed(2)} €</strong>
-                  </div>
-
-                  {descuento > 0 && (
-                    <>
-                      <div className="d-flex justify-content-between">
-                        <span className="text-muted">Subtotal:</span>
-                        <strong className="text-muted">
-                          {(precioBase + incColor + accTotal).toFixed(2)} €
-                        </strong>
-                      </div>
-                      <div className="d-flex justify-content-between">
-                        <span className="text-muted">Descuento ({descuento}%):</span>
-                        <strong className="text-muted text-danger">
-                          -
-                          {(
-                            (precioBase + incColor + accTotal) *
-                            (descuento / 100)
-                          ).toFixed(2)}{" "}
-                          €
-                        </strong>
-                      </div>
-                    </>
-                  )}
-
-                  {descuento === 0 && (
-                    <div className="d-flex justify-content-between">
-                      <span className="text-muted">Descuento cliente:</span>
-                      <strong className="text-muted">{descuento}%</strong>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        className={`${styles.input} ${styles.accesorioInput}`}
+                        value={sel || ""}
+                        onChange={(e) => setAccUnidades(a, e.target.value)}
+                      />
                     </div>
-                  )}
-
-                  <hr />
-                  <div className="d-flex justify-content-between fs-4">
-                    <span className="fw-bold">TOTAL:</span>
-                    <strong className="fw-bold" style={{ color: "#198754" }}>
-                      {total.toFixed(2)} €
-                    </strong>
-                  </div>
+                  );
+                })}
+              </div>
+              {accSel.length > 0 && (
+                <div className={styles.hint}>
+                  💡 Total accesorios: <strong>{accTotal.toFixed(2)} €</strong>
                 </div>
+              )}
+            </div>
+
+
+
+            {/* Resumen */}
+            <div className={styles.summary}>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Precio base:</span>
+                <span className={styles.summaryValue}>{precioBase.toFixed(2)} €</span>
+              </div>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Color:</span>
+                <span className={styles.summaryValue}>{incColor.toFixed(2)} €</span>
+              </div>
+              <div className={styles.summaryRow}>
+                <span className={styles.summaryLabel}>Accesorios:</span>
+                <span className={styles.summaryValue}>{accTotal.toFixed(2)} €</span>
               </div>
 
-              {msg && (
-                <div
-                  className={`col-12 alert ${
-                    msg.startsWith("✅") ? "alert-success" : "alert-warning"
-                  } mb-0`}
-                >
-                  {msg}
+              {descuento > 0 && (
+                <>
+                  <div className={styles.summaryRow}>
+                    <span className={styles.summaryLabel}>Subtotal:</span>
+                    <span className={styles.summaryValue}>
+                      {(precioBase + incColor + accTotal).toFixed(2)} €
+                    </span>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span className={styles.summaryLabel}>Descuento ({descuento}%):</span>
+                    <span className={styles.summaryValue} style={{ color: '#e53e3e' }}>
+                      -
+                      {(
+                        (precioBase + incColor + accTotal) *
+                        (descuento / 100)
+                      ).toFixed(2)}{" "}
+                      €
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {descuento === 0 && (
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Descuento cliente:</span>
+                  <span className={styles.summaryValue}>{descuento}%</span>
                 </div>
               )}
 
-              <div className="col-12">
-                <button
-                  className="btn w-100"
-                  style={{
-                    background: "var(--accent)",
-                    color: "var(--surface)",
-                    fontWeight: 600,
-                  }}
-                  onClick={guardarPresupuesto}
-                  disabled={saving || guardando || !alto || !ancho || !precioBase}
-                >
-                  {saving || guardando ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2"></span>
-                      {modoEdicion ? "Actualizando…" : "Guardando…"}
-                    </>
-                  ) : (
-                    <>{modoEdicion ? "💾 Guardar Cambios" : "💾 Guardar presupuesto"}</>
-                  )}
-                </button>
+              <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
+                <span className={styles.summaryLabel}>TOTAL:</span>
+                <span className={styles.summaryValue}>
+                  {total.toFixed(2)} €
+                </span>
               </div>
             </div>
+
+            {msg && (
+              <div className={msg.startsWith("✅") ? styles.alertSuccess : styles.alertWarning}>
+                {msg}
+              </div>
+            )}
+
+            <button
+              className={styles.submitButton}
+              onClick={guardarPresupuesto}
+              disabled={saving || guardando || !alto || !ancho || !precioBase}
+            >
+              {saving || guardando ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  {modoEdicion ? "Actualizando…" : "Guardando…"}
+                </>
+              ) : (
+                <>{modoEdicion ? "💾 Guardar Cambios" : "💾 Guardar presupuesto"}</>
+              )}
+            </button>
           </div>
         </div>
       </main>

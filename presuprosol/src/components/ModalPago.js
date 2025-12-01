@@ -6,6 +6,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import styles from "../styles/MisPresupuestos.module.css";
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
@@ -14,68 +15,57 @@ export default function ModalPago({ presupuesto, userId, onClose, onSuccess }) {
   const [procesando, setProcesando] = useState(false);
 
   return (
-    <div
-      className="modal d-block"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-      onClick={onClose}
-    >
-      <div
-        className="modal-dialog modal-dialog-centered modal-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">💳 Realizar Pago</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
-          </div>
+    <div className={styles.pagoModal} onClick={onClose}>
+      <div className={styles.pagoModalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.pagoModalHeader}>
+          <h5 className={styles.pagoModalTitle}>💳 Realizar Pago</h5>
+          <button className={styles.closeButton} onClick={onClose}>×</button>
+        </div>
 
-          <div className="modal-body">
-            {/* Resumen del presupuesto */}
-            <div className="alert alert-info mb-4">
-              <h6>📋 Resumen del presupuesto</h6>
-              <p className="mb-1">
-                <strong>Tipo:</strong> {presupuesto.tipo}
+        <div className={styles.pagoModalBody}>
+          {/* Resumen del presupuesto */}
+          <div className={styles.resumenPago}>
+            <h6 className={styles.resumenPagoTitle}>📋 Resumen del presupuesto</h6>
+            <p className={styles.resumenPagoRow}>
+              <strong>Tipo:</strong> {presupuesto.tipo}
+            </p>
+            {presupuesto.color && (
+              <p className={styles.resumenPagoRow}>
+                <strong>Color:</strong> {presupuesto.color}
               </p>
-              {presupuesto.color && (
-                <p className="mb-1">
-                  <strong>Color:</strong> {presupuesto.color}
-                </p>
-              )}
-              <hr />
-              <p className="mb-0 h5">
-                <strong>Total a pagar:</strong>{" "}
-                <span className="text-success">{presupuesto.total?.toFixed(2)} €</span>
-              </p>
-            </div>
-
-            {/* Formulario de pago con Stripe */}
-            {stripePromise ? (
-              <Elements stripe={stripePromise}>
-                <FormularioTarjeta
-                  presupuesto={presupuesto}
-                  userId={userId}
-                  onSuccess={onSuccess}
-                  procesando={procesando}
-                  setProcesando={setProcesando}
-                />
-              </Elements>
-            ) : (
-              <div className="alert alert-warning">
-                ⚠️ El pago con tarjeta no está configurado. Verifica las claves de Stripe en .env.local
-              </div>
             )}
+            <hr style={{ border: "1px solid #90cdf4", margin: "1rem 0" }} />
+            <p className={styles.resumenPagoTotal}>
+              Total a pagar: {presupuesto.total?.toFixed(2)} €
+            </p>
           </div>
 
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={procesando}
-            >
-              Cancelar
-            </button>
-          </div>
+          {/* Formulario de pago con Stripe */}
+          {stripePromise ? (
+            <Elements stripe={stripePromise}>
+              <FormularioTarjeta
+                presupuesto={presupuesto}
+                userId={userId}
+                onSuccess={onSuccess}
+                procesando={procesando}
+                setProcesando={setProcesando}
+              />
+            </Elements>
+          ) : (
+            <div className={styles.warningBox}>
+              ⚠️ El pago con tarjeta no está configurado. Verifica las claves de Stripe en .env.local
+            </div>
+          )}
+        </div>
+
+        <div className={styles.pagoModalFooter}>
+          <button
+            className={`${styles.btn} ${styles.btnSecondary}`}
+            onClick={onClose}
+            disabled={procesando}
+          >
+            Cancelar
+          </button>
         </div>
       </div>
     </div>
@@ -220,9 +210,9 @@ function FormularioTarjeta({ presupuesto, userId, onSuccess, procesando, setProc
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-3">
-        <label className="form-label fw-bold">Datos de la tarjeta</label>
-        <div className="border rounded p-3 bg-light">
+      <div>
+        <label className={styles.cardInputLabel}>Datos de la tarjeta</label>
+        <div className={styles.cardInputContainer}>
           <CardElement
             options={{
               style: {
@@ -245,67 +235,62 @@ function FormularioTarjeta({ presupuesto, userId, onSuccess, procesando, setProc
       </div>
 
       {/* Tarjetas de prueba */}
-      <div className="card bg-light mb-3">
-        <div className="card-body">
-          <h6 className="card-title mb-3">
-            🧪 <strong>Tarjetas de prueba disponibles</strong>
-          </h6>
-          <div className="table-responsive">
-            <table className="table table-sm table-borderless mb-0">
-              <thead>
-                <tr>
-                  <th>Tarjeta</th>
-                  <th>Número</th>
-                  <th>Resultado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tarjetasPrueba.map((tarjeta, index) => (
-                  <tr key={index}>
-                    <td className="small fw-semibold">{tarjeta.nombre}</td>
-                    <td className="small">
-                      <code style={{ fontSize: '11px' }}>{tarjeta.numero}</code>
-                    </td>
-                    <td className="small">{tarjeta.tipo}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <hr />
-          <div className="small text-muted">
-            <strong>📌 Datos adicionales para todas las tarjetas:</strong>
-            <ul className="mb-0 mt-2">
-              <li>Fecha de vencimiento: Cualquier fecha futura (ej: <code>12/25</code>)</li>
-              <li>CVV: Cualquier 3 dígitos (ej: <code>123</code>)</li>
-              <li>Código postal: Cualquier número (ej: <code>12345</code>)</li>
-            </ul>
-          </div>
+      <div className={styles.testCardsBox}>
+        <h6 className={styles.testCardsTitle}>
+          🧪 Tarjetas de prueba disponibles
+        </h6>
+        <table className={styles.testCardsTable}>
+          <thead>
+            <tr>
+              <th>Tarjeta</th>
+              <th>Número</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tarjetasPrueba.map((tarjeta, index) => (
+              <tr key={index}>
+                <td style={{ fontWeight: 600 }}>{tarjeta.nombre}</td>
+                <td>
+                  <code>{tarjeta.numero}</code>
+                </td>
+                <td>{tarjeta.tipo}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className={styles.testCardsInfo}>
+          <strong>📌 Datos adicionales para todas las tarjetas:</strong>
+          <ul>
+            <li>Fecha de vencimiento: Cualquier fecha futura (ej: <code>12/25</code>)</li>
+            <li>CVV: Cualquier 3 dígitos (ej: <code>123</code>)</li>
+            <li>Código postal: Cualquier número (ej: <code>12345</code>)</li>
+          </ul>
         </div>
       </div>
 
       {/* Mensaje de error amistoso */}
       {error && (
-        <div className="alert alert-danger d-flex align-items-start" role="alert">
-          <div className="me-2" style={{ fontSize: "24px" }}>⚠️</div>
-          <div>
-            <strong>Ups, hubo un problema</strong>
-            <p className="mb-2 mt-1">{error}</p>
-            <small className="text-dark">
+        <div className={styles.errorAlert}>
+          <div className={styles.errorIcon}>⚠️</div>
+          <div className={styles.errorContent}>
+            <div className={styles.errorTitle}>Ups, hubo un problema</div>
+            <p className={styles.errorMessage}>{error}</p>
+            <div className={styles.errorHint}>
               💡 <strong>Sugerencia:</strong> Usa una de las tarjetas de prueba de la tabla de arriba.
-            </small>
+            </div>
           </div>
         </div>
       )}
 
       <button
         type="submit"
-        className="btn btn-success btn-lg w-100"
+        className={styles.btnPagar}
         disabled={!stripe || procesando}
       >
         {procesando ? (
           <>
-            <span className="spinner-border spinner-border-sm me-2"></span>
+            <span className={styles.spinner} style={{ display: "inline-block", width: "1rem", height: "1rem", marginRight: "0.5rem", borderWidth: "2px" }}></span>
             Procesando pago seguro...
           </>
         ) : (
@@ -315,10 +300,8 @@ function FormularioTarjeta({ presupuesto, userId, onSuccess, procesando, setProc
         )}
       </button>
 
-      <div className="text-center mt-3">
-        <small className="text-muted">
-          🔒 Pago 100% seguro procesado por <strong>Stripe</strong>
-        </small>
+      <div className={styles.pagoSeguro}>
+        🔒 Pago 100% seguro procesado por <strong>Stripe</strong>
       </div>
     </form>
   );
