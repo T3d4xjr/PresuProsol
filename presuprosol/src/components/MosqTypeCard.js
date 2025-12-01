@@ -1,30 +1,22 @@
 // src/components/MosqTypeCard.jsx
 import Image from "next/image";
+import styles from "./MosqTypeCard.module.css";
 
 export default function MosqTypeCard({ title, imgSrc, onClick }) {
   return (
-    <div className="card h-100 shadow-sm">
-      <div className="ratio ratio-16x9">
+    <div className={styles.card} onClick={onClick}>
+      <div className={styles.imageContainer}>
         <Image
           src={imgSrc}
           alt={title}
           fill
-          sizes="(max-width: 768px) 100vw, 480px"
-          style={{ objectFit: "cover", borderTopLeftRadius: 8, borderTopRightRadius: 8 }}
+          sizes="(max-width: 768px) 100vw, 380px"
+          className={styles.image}
         />
       </div>
-      <div className="card-body d-flex flex-column">
-        <h3 className="h6 mb-3">{title}</h3>
-        <button
-          className="btn mt-auto"
-          onClick={onClick}
-          style={{
-            background: "var(--accent)",
-            color: "var(--surface)",
-            fontWeight: 600,
-            border: "none",
-          }}
-        >
+      <div className={styles.cardBody}>
+        <h3 className={styles.title}>{title}</h3>
+        <button className={styles.button}>
           Configurar
         </button>
       </div>

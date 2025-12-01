@@ -1,43 +1,33 @@
 // src/components/CompactTypeCard.jsx
+import styles from "./CompactTypeCard.module.css";
+
 export default function CompactTypeCard({ title, subtitle, imgSrc, onClick }) {
   return (
-    <div className="card h-100 shadow-sm border-0 rounded-4 compact-card">
+    <div className={styles.card} onClick={onClick}>
       {/* Imagen con ratio 4:3 */}
-      <div className="ratio ratio-4x3 position-relative rounded-top-4 overflow-hidden">
+      <div className={styles.imageContainer}>
         <img
           src={imgSrc}
           alt={title}
-          className="w-100 h-100"
-          style={{
-            objectFit: "cover",
-            transform: "scale(1)",
-            transition: "transform .35s ease",
-          }}
+          className={styles.image}
           onError={(e) => (e.currentTarget.src = "/assets/avatar.jpg")}
         />
       </div>
 
-      <div className="card-body">
-        <h3 className="h6 mb-1">{title}</h3>
+      <div className={styles.cardBody}>
+        <h3 className={styles.title}>{title}</h3>
         {subtitle && (
-          <p className="text-muted small mb-3">
+          <p className={styles.subtitle}>
             {subtitle}
           </p>
         )}
         <button
           type="button"
-          className="btn btn-warning fw-semibold px-3"
-          onClick={onClick}
+          className={styles.button}
         >
           Configurar
         </button>
       </div>
-
-      <style jsx>{`
-        .compact-card:hover img {
-          transform: scale(1.04);
-        }
-      `}</style>
     </div>
   );
 }

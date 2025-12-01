@@ -1,0 +1,205 @@
+/* Layout de páginas de productos */
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mainContent {
+  flex-grow: 1;
+  padding: 40px 16px;
+}
+
+.section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header de página */
+.pageHeader {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.pageTitle {
+  color: var(--primary);
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.pageSubtitle {
+  color: var(--text2);
+  font-size: 16px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* Grid de tarjetas */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  justify-items: center;
+}
+
+@media (min-width: 768px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Grid para 2 columnas máximo */
+.cardsGrid2Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  justify-items: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .cardsGrid2Col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Header con botón de volver */
+.headerWithBack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .headerWithBack {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.btnBack {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnBack:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* Para layouts especiales */
+.narrowSection {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* Estilos específicos para pérgolas */
+.pergolaCard {
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 768px) {
+  .pergolaCard {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+.pergolaCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.pergolaCardImage {
+  width: 100%;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.pergolaCardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pergolaCardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pergolaCardTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0 0 12px 0;
+}
+
+.pergolaCardText {
+  color: var(--text2);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.pergolaFeatures {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+
+.pergolaButton {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+
+.pergolaButton:hover {
+  background: #ff9d2d;
+}
+
+.pergolaAlert {
+  background: #e7f3ff;
+  color: #014361;
+  border: 1px solid #b3d9ff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 24px;
+}
+
+.pergolaAlert strong {
+  font-weight: 600;
+}
+
