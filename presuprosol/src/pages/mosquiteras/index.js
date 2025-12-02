@@ -27,12 +27,10 @@ export default function Mosquiteras() {
       <div className={styles.pageContainer}>
         <Header />
 
-        <main className={styles.mainContent}>
-          <section className={styles.section}>
+        <main className={`${styles.mainContent} ${styles.mainContentSoft}`}>
+          <section className={`${styles.section} ${styles.sectionBox}`}>
             <div className={styles.pageHeader}>
-              <h1 className={styles.pageTitle}>
-                Elige el tipo de mosquitera
-              </h1>
+              <h1 className={styles.pageTitle}>Elige el tipo de mosquitera</h1>
               <p className={styles.pageSubtitle}>
                 Selecciona un tipo para configurarlo y obtener tu precio
                 personalizado.

@@ -203,3 +203,202 @@
   font-weight: 600;
 }
 
+/* Fondo suave para las páginas de productos */
+.mainContentSoft {
+  padding: 56px 24px 72px;
+  background: linear-gradient(180deg, #f5f7fb 0%, #ffffff 45%);
+}
+
+/* Caja central donde van título + tarjetas */
+.sectionBox {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 32px 28px 40px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+}
+
+/* Ajustes de cabecera para que quede más “landing” */
+.pageHeader {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.pageTitle {
+  color: var(--primary);
+  font-size: clamp(30px, 3.2vw, 38px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-bottom: 10px;
+}
+
+.pageSubtitle {
+  color: var(--text2);
+  font-size: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Grid más equilibrado en desktop */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  justify-items: center;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1150px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+/* ==================== ACCESORIOS ==================== */
+
+.accesoriosSection {
+  margin-top: 40px;
+}
+
+.accesoriosHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.accesoriosTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Slider + texto */
+.accesoriosSliderWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 380px;
+}
+
+.accesoriosSliderLabel {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.accesoriosSlider {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  outline: none;
+}
+
+/* track */
+.accesoriosSlider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent) 0%, #e5e7eb 100%);
+}
+.accesoriosSlider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent) 0%, #e5e7eb 100%);
+}
+
+/* thumb */
+.accesoriosSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--accent);
+  margin-top: -5px;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+.accesoriosSlider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+
+.accesoriosSliderValue {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* Grid de tarjetas de accesorios */
+.accesoriosGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .accesoriosHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .accesoriosGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.accesorioCard {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.accNombre {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.accPrecio {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
+.accAddButton {
+  background: var(--accent);
+  border: none;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.accAddButton:hover {
+  background: #ff9d2d;
+}
+
+.noAccesorios {
+  font-size: 14px;
+  color: var(--text2);
+  margin-top: 8px;
+}

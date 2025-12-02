@@ -22,6 +22,9 @@ export default function MisPresupuestos() {
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
   const [presupuestoAEliminar, setPresupuestoAEliminar] = useState(null);
+  const [categoriaAbierta, setCategoriaAbierta] = useState(null);
+  const [mostrarModalCategoria, setMostrarModalCategoria] = useState(false);
+  const [filtroPrecio, setFiltroPrecio] = useState("todos");
 
   useEffect(() => {
     if (!loading && !session) {
@@ -316,12 +319,37 @@ export default function MisPresupuestos() {
     );
   }
 
+  // Agrupar presupuestos por tipo
   const grouped = presupuestos.reduce((acc, p) => {
     const tipo = p.tipo || "Otros";
     if (!acc[tipo]) acc[tipo] = [];
     acc[tipo].push(p);
     return acc;
   }, {});
+
+  // Mapeo de nombres de categorías más amigables
+  const categoriaNombres = {
+    "mosquitera-corredera": "Mosquiteras Correderas",
+    "mosquitera-enrollable": "Mosquiteras Enrollables",
+    "mosquitera-fija": "Mosquiteras Fijas",
+    "mosquitera-plisada": "Mosquiteras Plisadas",
+    "pano-enrollable": "Paños Enrollables",
+    "pano-plisado": "Paños Plisados",
+    "compacto-cajonfrontal": "Compactos Cajón Frontal",
+    "compacto-minimo": "Compactos Mínimo",
+    "compacto-monoblock": "Compactos Monoblock",
+    "proteccion-solar-enrollable": "Protección Solar Enrollable",
+    "proteccion-solar-lateral": "Protección Solar Lateral",
+    "proteccion-solar-ventuszip01": "Protección Solar Ventus",
+    "puerta-seccional-residencial": "Puertas Seccionales Residencial",
+    "puerta-seccional-industrial": "Puertas Seccionales Industrial",
+    "pergola-bioclimatica": "Pérgolas Bioclimáticas",
+    "Otros": "Otros"
+  };
+
+  const getNombreCategoria = (tipo) => {
+    return categoriaNombres[tipo] || tipo;
+  };
 
   return (
     <>
@@ -349,10 +377,94 @@ export default function MisPresupuestos() {
           </div>
         )}
 
-        {Object.keys(grouped).map((categoria) => (
-          <div key={categoria} className={styles.categorySection}>
-            <h3 className={styles.categoryTitle}>{categoria}</h3>
-            <div className={styles.tableContainer}>
+        {presupuestos.length > 0 && (
+          <div className={styles.filterSection}>
+            <select
+              value={filtroPrecio}
+              onChange={(e) => setFiltroPrecio(e.target.value)}
+              className={styles.filterSelect}
+            >
+              <option value="todos">Todos los precios</option>
+              <option value="0-500">0€ - 500€</option>
+              <option value="500-1000">500€ - 1000€</option>
+              <option value="1000-2500">1000€ - 2500€</option>
+              <option value="2500+">2500€ o más</option>
+            </select>
+          </div>
+        )}
+
+        <div className={styles.categoriesGrid}>
+          {Object.keys(grouped).sort().map((categoria) => {
+            const presupuestosCategoria = grouped[categoria].filter((p) => {
+              // Filtro de precio
+              let matchPrecio = true;
+              if (filtroPrecio !== "todos") {
+                const total = p.total || 0;
+                if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
+                else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
+                else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
+                else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
+              }
+              
+              return matchPrecio;
+            });
+            
+            if (presupuestosCategoria.length === 0) return null;
+            
+            const totalCategoria = presupuestosCategoria.reduce((sum, p) => sum + (p.total || 0), 0);
+            
+            return (
+              <div key={categoria} className={styles.categoryCard}>
+                <div 
+                  className={styles.categoryHeader}
+                  onClick={() => {
+                    setCategoriaAbierta(categoria);
+                    setMostrarModalCategoria(true);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className={styles.categoryInfo}>
+                    <h3 className={styles.categoryCardTitle}>{getNombreCategoria(categoria)}</h3>
+                    <div className={styles.categoryStats}>
+                      <span className={styles.statBadge}>
+                        {presupuestosCategoria.length} presupuesto{presupuestosCategoria.length !== 1 ? 's' : ''}
+                      </span>
+                      <span className={styles.statTotal}>
+                        Total: {totalCategoria.toFixed(2)} €
+                      </span>
+                    </div>
+                  </div>
+                  <div className={styles.expandIcon}>
+                    ▶
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* Modal de categoría */}
+      {mostrarModalCategoria && categoriaAbierta && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setMostrarModalCategoria(false)}
+        >
+          <div
+            className={styles.modalContentLarge}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h5 className={styles.modalTitle}>{getNombreCategoria(categoriaAbierta)}</h5>
+              <button
+                className={styles.closeButton}
+                onClick={() => setMostrarModalCategoria(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBodyLarge}>
+              <div className={styles.tableContainer}>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -365,7 +477,20 @@ export default function MisPresupuestos() {
                   </tr>
                 </thead>
                 <tbody>
-                  {grouped[categoria].map((p) => (
+                  {grouped[categoriaAbierta]
+                    .filter((p) => {
+                      let matchPrecio = true;
+                      if (filtroPrecio !== "todos") {
+                        const total = p.total || 0;
+                        if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
+                        else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
+                        else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
+                        else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
+                      }
+                      
+                      return matchPrecio;
+                    })
+                    .map((p) => (
                     <tr key={p.id}>
                       <td>
                         {new Date(p.created_at).toLocaleDateString("es-ES")}
@@ -449,9 +574,10 @@ export default function MisPresupuestos() {
                 </tbody>
               </table>
             </div>
+            </div>
           </div>
-        ))}
-      </main>
+        </div>
+      )}
 
       {/* Modal eliminar */}
       {mostrarModalEliminar && presupuestoAEliminar && (

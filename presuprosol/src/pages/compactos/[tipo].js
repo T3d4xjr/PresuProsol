@@ -92,6 +92,8 @@ export default function ConfigCompacto({
 
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
+  const [ordenPrecio, setOrdenPrecio] = useState("asc");
+  const [rangoPrecio, setRangoPrecio] = useState("todos");
 
   const tituloTipo =
     tipo === "pvc"
@@ -292,7 +294,7 @@ export default function ConfigCompacto({
 
   /* ================== HANDLERS ================== */
   const onSetAccUnidades = (acc, value) => {
-    const uds = Math.max(0, parseInt(value || "0", 10));
+    const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10))); // Límite de 10 unidades
 
     setAccSel((prev) => {
       const found = prev.find((x) => x.id === acc.id);
@@ -578,9 +580,20 @@ export default function ConfigCompacto({
                   className={styles.input}
                   type="number"
                   min={0}
+                  max={1000}
                   value={alto}
-                  onChange={(e) => setAlto(e.target.value)}
+                  onChange={(e) => {
+                    const valor = parseInt(e.target.value) || 0;
+                    setAlto(Math.min(1000, Math.max(0, valor)).toString());
+                  }}
+                  onBlur={(e) => {
+                    const valor = parseInt(e.target.value) || 0;
+                    if (valor > 1000) setAlto("1000");
+                  }}
                 />
+                <small style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                  Máximo: 1000 mm
+                </small>
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Ancho (mm)</label>
@@ -588,25 +601,91 @@ export default function ConfigCompacto({
                   className={styles.input}
                   type="number"
                   min={0}
+                  max={2500}
                   value={ancho}
-                  onChange={(e) => setAncho(e.target.value)}
+                  onChange={(e) => {
+                    const valor = parseInt(e.target.value) || 0;
+                    setAncho(Math.min(2500, Math.max(0, valor)).toString());
+                  }}
+                  onBlur={(e) => {
+                    const valor = parseInt(e.target.value) || 0;
+                    if (valor > 2500) setAncho("2500");
+                  }}
                 />
+                <small style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.25rem', display: 'block' }}>
+                  Máximo: 2500 mm
+                </small>
               </div>
             </div>
 
             {/* Accesorios */}
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Accesorios</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 className={styles.sectionTitle}>Accesorios</h2>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#666' }}>Rango de precio:</label>
+                    <select 
+                      className={styles.select}
+                      value={rangoPrecio}
+                      onChange={(e) => setRangoPrecio(e.target.value)}
+                      style={{ width: 'auto', padding: '0.5rem' }}
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="0-10">0€ - 10€</option>
+                      <option value="10-20">10€ - 20€</option>
+                      <option value="20-50">20€ - 50€</option>
+                      <option value="50+">Más de 50€</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#666' }}>Ordenar:</label>
+                    <select 
+                      className={styles.select}
+                      value={ordenPrecio}
+                      onChange={(e) => setOrdenPrecio(e.target.value)}
+                      style={{ width: 'auto', padding: '0.5rem' }}
+                    >
+                      <option value="asc">Menor a mayor</option>
+                      <option value="desc">Mayor a menor</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
               {accesorios.length === 0 && (
                 <p className={styles.emptyMessage}>No hay accesorios disponibles</p>
               )}
               <div className={styles.accesoriosGrid}>
-                {accesorios.map((a) => {
+                {[...accesorios]
+                  .sort((a, b) => {
+                    if (ordenPrecio === 'asc') {
+                      return a.pvp - b.pvp;
+                    } else {
+                      return b.pvp - a.pvp;
+                    }
+                  })
+                  .map((a) => {
                   const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
                   const imgSrc = getAccesorioImagen(a.nombre);
+                  
+                  // Filtrar por rango de precio
+                  let enRango = true;
+                  const precio = a.pvp;
+                  if (rangoPrecio === '0-10') enRango = precio >= 0 && precio <= 10;
+                  else if (rangoPrecio === '10-20') enRango = precio > 10 && precio <= 20;
+                  else if (rangoPrecio === '20-50') enRango = precio > 20 && precio <= 50;
+                  else if (rangoPrecio === '50+') enRango = precio > 50;
 
                   return (
-                    <div className={styles.accesorioCard} key={a.id}>
+                    <div 
+                      className={styles.accesorioCard} 
+                      key={a.id}
+                      style={{ 
+                        opacity: enRango ? 1 : 0.4,
+                        pointerEvents: enRango ? 'auto' : 'none',
+                        filter: enRango ? 'none' : 'grayscale(1)'
+                      }}
+                    >
                       <div className={styles.accesorioImage}>
                         {imgSrc ? (
                           <img
@@ -627,10 +706,13 @@ export default function ConfigCompacto({
                       <input
                         type="number"
                         min={0}
+                        max={10}
                         step={1}
                         className={`${styles.input} ${styles.accesorioInput}`}
                         value={sel}
                         onChange={(e) => onSetAccUnidades(a, e.target.value)}
+                        title="Máximo 10 unidades"
+                        disabled={!enRango}
                       />
                     </div>
                   );

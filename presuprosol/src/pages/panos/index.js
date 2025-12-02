@@ -35,7 +35,7 @@ export default function PanosIndex() {
           <div className={styles.cardsGrid2Col}>
             <MosqTypeCard
               title="Paño completo"
-              imgSrc="/assets/panos/panoaluminio01.png"
+              imgSrc="/assets/panos/panoaluminioo01.png"
               onClick={() => go("pano")}
             />
             <MosqTypeCard

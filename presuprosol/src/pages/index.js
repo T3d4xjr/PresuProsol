@@ -78,7 +78,6 @@ export default function Home() {
             </p>
             <button
               className={`${styles.primaryBtn} ${styles.wiggleOnHover}`}
-              onClick={() => handleProtectedClick("/presupuestador")}
             >
               Empieza tu presupuesto
             </button>
@@ -112,7 +111,7 @@ export default function Home() {
             <div className={`${styles.card} ${styles.reveal}`} data-reveal>
               <div className={styles.cardImg}>
                 <Image
-                  src="/assets/mosquiteras/mosquitera01.jpg"
+                  src="/assets/mosquiteras/mosquitera.png"
                   alt="Mosquiteras"
                   fill
                   sizes="(max-width: 768px) 100vw, 360px"
@@ -132,7 +131,7 @@ export default function Home() {
             <div className={`${styles.card} ${styles.reveal}`} data-reveal>
               <div className={styles.cardImg}>
                 <Image
-                  src="/assets/panos/panoaluminio01.png"
+                  src="/assets/panos/pano.png"
                   alt="Paños de persiana"
                   fill
                   sizes="(max-width: 768px) 100vw, 360px"
@@ -152,7 +151,7 @@ export default function Home() {
             <div className={`${styles.card} ${styles.reveal}`} data-reveal>
               <div className={styles.cardImg}>
                 <Image
-                  src="/assets/persianasCompacto/compacto02.png"
+                  src="/assets/persianasCompacto/cajon.png"
                   alt="Persianas compacto"
                   fill
                   sizes="(max-width: 768px) 100vw, 360px"
@@ -172,7 +171,7 @@ export default function Home() {
             <div className={`${styles.card} ${styles.reveal}`} data-reveal>
               <div className={styles.cardImg}>
                 <Image
-                  src="/assets/proteccionSolar/Stor-vilaluz.png"
+                  src="/assets/proteccionSolar/proteccionSolar.png"
                   alt="Protección solar"
                   fill
                   sizes="(max-width: 768px) 100vw, 360px"
@@ -212,7 +211,7 @@ export default function Home() {
             <div className={`${styles.card} ${styles.reveal}`} data-reveal>
               <div className={styles.cardImg}>
                 <Image
-                  src="/assets/pergolaBioclimatica/pergola01.png"
+                  src="/assets/pergolaBioclimatica/PERGOLA.png"
                   alt="Pérgola bioclimática"
                   fill
                   sizes="(max-width: 768px) 100vw, 360px"

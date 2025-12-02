@@ -118,6 +118,8 @@ export default function ConfigMosquitera({
   const [total, setTotal] = useState(0);
 
   const [msg, setMsg] = useState("");
+  const [ordenPrecio, setOrdenPrecio] = useState("asc"); // 'asc' o 'desc'
+  const [rangoPrecio, setRangoPrecio] = useState("todos"); // 'todos', '0-10', '10-20', '20-50', '50+'
   const [saving, setSaving] = useState(false);
 
   console.log("📊 [ESTADOS]", {
@@ -337,7 +339,7 @@ export default function ConfigMosquitera({
 
   /* ✏️ Cambiar unidades de accesorio */
   const setAccUnidades = (acc, unidades) => {
-    const uds = Math.max(0, parseInt(unidades || "0", 10));
+    const uds = Math.max(0, Math.min(10, parseInt(unidades || "0", 10))); // Límite de 10 unidades
     console.log("[setAccUnidades]", { acc, unidades, uds });
     setAccSel((prev) => {
       const exists = prev.find((x) => x.id === acc.id);
@@ -531,16 +533,72 @@ export default function ConfigMosquitera({
 
             {/* Accesorios */}
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Accesorios</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 className={styles.sectionTitle}>Accesorios</h2>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#666' }}>Rango de precio:</label>
+                    <select 
+                      className={styles.select}
+                      value={rangoPrecio}
+                      onChange={(e) => setRangoPrecio(e.target.value)}
+                      style={{ width: 'auto', padding: '0.5rem' }}
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="0-10">0€ - 10€</option>
+                      <option value="10-20">10€ - 20€</option>
+                      <option value="20-50">20€ - 50€</option>
+                      <option value="50+">Más de 50€</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#666' }}>Ordenar:</label>
+                    <select 
+                      className={styles.select}
+                      value={ordenPrecio}
+                      onChange={(e) => setOrdenPrecio(e.target.value)}
+                      style={{ width: 'auto', padding: '0.5rem' }}
+                    >
+                      <option value="asc">Menor a mayor</option>
+                      <option value="desc">Mayor a menor</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
               {accesorios.length === 0 && (
                 <p className={styles.emptyMessage}>No hay accesorios disponibles</p>
               )}
               <div className={styles.accesoriosGrid}>
-                {accesorios.map((a) => {
+                {[...accesorios]
+                  .sort((a, b) => {
+                    if (ordenPrecio === 'asc') {
+                      return a.precio_unit - b.precio_unit;
+                    } else {
+                      return b.precio_unit - a.precio_unit;
+                    }
+                  })
+                  .map((a) => {
                   const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
                   const img = getAccImg(a.nombre);
+                  
+                  // Filtrar por rango de precio
+                  let enRango = true;
+                  const precio = a.precio_unit;
+                  if (rangoPrecio === '0-10') enRango = precio >= 0 && precio <= 10;
+                  else if (rangoPrecio === '10-20') enRango = precio > 10 && precio <= 20;
+                  else if (rangoPrecio === '20-50') enRango = precio > 20 && precio <= 50;
+                  else if (rangoPrecio === '50+') enRango = precio > 50;
+                  
                   return (
-                    <div className={styles.accesorioCard} key={a.id}>
+                    <div 
+                      className={styles.accesorioCard} 
+                      key={a.id}
+                      style={{ 
+                        opacity: enRango ? 1 : 0.4,
+                        pointerEvents: enRango ? 'auto' : 'none',
+                        filter: enRango ? 'none' : 'grayscale(1)'
+                      }}
+                    >
                       <div className={styles.accesorioImage}>
                         <Image
                           src={img}
@@ -561,10 +619,13 @@ export default function ConfigMosquitera({
                       <input
                         type="number"
                         min={0}
+                        max={10}
                         step={1}
                         className={`${styles.input} ${styles.accesorioInput}`}
                         value={sel || ""}
                         onChange={(e) => setAccUnidades(a, e.target.value)}
+                        title="Máximo 10 unidades"
+                        disabled={!enRango}
                       />
                     </div>
                   );
@@ -585,10 +646,7 @@ export default function ConfigMosquitera({
                 <span className={styles.summaryLabel}>Precio base:</span>
                 <span className={styles.summaryValue}>{precioBase.toFixed(2)} €</span>
               </div>
-              <div className={styles.summaryRow}>
-                <span className={styles.summaryLabel}>Color:</span>
-                <span className={styles.summaryValue}>{incColor.toFixed(2)} €</span>
-              </div>
+              
               <div className={styles.summaryRow}>
                 <span className={styles.summaryLabel}>Accesorios:</span>
                 <span className={styles.summaryValue}>{accTotal.toFixed(2)} €</span>

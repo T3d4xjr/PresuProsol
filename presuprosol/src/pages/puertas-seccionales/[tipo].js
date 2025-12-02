@@ -44,6 +44,9 @@ export default function ConfigPuertaSeccional({
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [ordenPrecio, setOrdenPrecio] = useState("asc");
+  const [rangoPrecio, setRangoPrecio] = useState("todos");
+
   const tituloTipo =
     tipo === "residencial"
       ? "Puerta Seccional Residencial"
@@ -257,7 +260,7 @@ export default function ConfigPuertaSeccional({
 
   /* ================== MANEJAR ACCESORIOS ================== */
   const onSetAccUnidades = (acc, value) => {
-    const uds = Math.max(0, parseInt(value || "0", 10));
+    const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10)));
 
     setAccSel((prev) => {
       const found = prev.find((x) => x.id === acc.id);
@@ -532,49 +535,111 @@ export default function ConfigPuertaSeccional({
             {/* Accesorios */}
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>Accesorios</h2>
+              
+              {accesorios.length > 0 && (
+                <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#666' }}>Filtrar:</label>
+                    <select
+                      className={styles.select}
+                      value={rangoPrecio}
+                      onChange={(e) => setRangoPrecio(e.target.value)}
+                      style={{ width: "auto", padding: "0.5rem" }}
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="0-10">0€ - 10€</option>
+                      <option value="10-20">10€ - 20€</option>
+                      <option value="20-50">20€ - 50€</option>
+                      <option value="50+">Más de 50€</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.9rem', color: '#666' }}>Ordenar:</label>
+                    <select
+                      className={styles.select}
+                      value={ordenPrecio}
+                      onChange={(e) => setOrdenPrecio(e.target.value)}
+                      style={{ width: "auto", padding: "0.5rem" }}
+                    >
+                      <option value="asc">Menor a mayor</option>
+                      <option value="desc">Mayor a menor</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              
               {accesorios.length === 0 && (
                 <p className={styles.emptyMessage}>No hay accesorios disponibles</p>
               )}
               {accesorios.length > 0 && (
                 <div className={styles.accesoriosGrid}>
-                  {accesorios.map((a) => {
-                    const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
-                    const imagenUrl = getImagenAccesorio(a.nombre);
+                  {[...accesorios]
+                    .sort((a, b) => {
+                      const precioA = Number(a.pvp || 0);
+                      const precioB = Number(b.pvp || 0);
+                      return ordenPrecio === "asc" ? precioA - precioB : precioB - precioA;
+                    })
+                    .map((a) => {
+                      const sel = accSel.find((x) => x.id === a.id)?.unidades || 0;
+                      const imagenUrl = getImagenAccesorio(a.nombre);
+                      const precio = Number(a.pvp || 0);
+                      
+                      let enRango = true;
+                      if (rangoPrecio === "0-10") {
+                        enRango = precio >= 0 && precio <= 10;
+                      } else if (rangoPrecio === "10-20") {
+                        enRango = precio > 10 && precio <= 20;
+                      } else if (rangoPrecio === "20-50") {
+                        enRango = precio > 20 && precio <= 50;
+                      } else if (rangoPrecio === "50+") {
+                        enRango = precio > 50;
+                      }
 
-                    return (
-                      <div className={styles.accesorioCard} key={a.id}>
-                        <div className={styles.accesorioImage}>
-                          {imagenUrl ? (
-                            <img
-                              src={imagenUrl}
-                              alt={a.nombre}
-                              style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                              onError={(e) => {
-                                console.error("❌ Error cargando imagen:", imagenUrl);
-                                e.target.style.display = "none";
-                              }}
-                            />
-                          ) : (
-                            <div style={{ fontSize: "48px", color: "#dee2e6" }}>📦</div>
-                          )}
-                        </div>
-                        <div className={styles.accesorioInfo}>
-                          <div className={styles.accesorioName}>{a.nombre}</div>
-                          <div className={styles.accesorioPrecio}>
-                            {Number(a.pvp || 0).toFixed(2)} € / {a.unidad}
+                      return (
+                        <div 
+                          className={styles.accesorioCard} 
+                          key={a.id}
+                          style={{
+                            opacity: enRango ? 1 : 0.4,
+                            filter: enRango ? "none" : "grayscale(1)",
+                            pointerEvents: enRango ? "auto" : "none"
+                          }}
+                        >
+                          <div className={styles.accesorioImage}>
+                            {imagenUrl ? (
+                              <img
+                                src={imagenUrl}
+                                alt={a.nombre}
+                                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                onError={(e) => {
+                                  console.error("❌ Error cargando imagen:", imagenUrl);
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            ) : (
+                              <div style={{ fontSize: "48px", color: "#dee2e6" }}>📦</div>
+                            )}
                           </div>
+                          <div className={styles.accesorioInfo}>
+                            <div className={styles.accesorioName}>{a.nombre}</div>
+                            <div className={styles.accesorioPrecio}>
+                              {precio.toFixed(2)} € / {a.unidad}
+                            </div>
+                          </div>
+                          <input
+                            type="number"
+                            min={0}
+                            max={10}
+                            step={1}
+                            className={`${styles.input} ${styles.accesorioInput}`}
+                            value={sel}
+                            onChange={(e) => onSetAccUnidades(a, e.target.value)}
+                            disabled={!enRango}
+                            title="Máximo 10 unidades"
+                          />
                         </div>
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          className={`${styles.input} ${styles.accesorioInput}`}
-                          value={sel}
-                          onChange={(e) => onSetAccUnidades(a, e.target.value)}
-                        />
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
 

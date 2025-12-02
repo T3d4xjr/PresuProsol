@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import Header from "@/components/Header";
 import styles from "@/styles/Login.module.css";
 
@@ -13,6 +14,7 @@ import {
 } from "./api/loginUsuario";
 
 export default function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [alert, setAlert] = useState(null);
@@ -140,8 +142,9 @@ export default function Login() {
       console.log("[LOGIN] 🎉 Login exitoso");
       show("ok", `¡Bienvenido/a, ${adminRow.usuario}! 🎉`);
 
+      // Usar router de Next.js en vez de window.location para evitar recargas innecesarias
       setTimeout(() => {
-        window.location.href = "/";
+        router.push("/");
       }, 1000);
     } catch (err) {
       console.error(

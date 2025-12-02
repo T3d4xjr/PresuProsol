@@ -126,6 +126,108 @@
   color: #742a2a;
 }
 
+.filterSection {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  min-width: 200px;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #ff8a00;
+  box-shadow: 0 0 0 3px rgba(255, 138, 0, 0.1);
+}
+
+.categoriesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.categoryCard {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  height: fit-content;
+}
+
+.categoryCard:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  border-color: #ff8a00;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #f7fafc;
+  border-bottom: 2px solid #e2e8f0;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.categoryHeader:hover {
+  background: #edf2f7;
+}
+
+.categoryInfo {
+  flex: 1;
+}
+
+.categoryCardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  color: #1a202c;
+}
+
+.categoryStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statBadge {
+  background: #ff8a00;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.statTotal {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.expandIcon {
+  font-size: 1.25rem;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+  color: #718096;
+}
+
 .statsCard {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -151,8 +253,9 @@
 }
 
 .table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #f7fafc;
+  color: #1a202c;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .table th {
@@ -294,14 +397,14 @@
 }
 
 .btnPrimary {
-  background: #667eea;
+  background: #ff8a00;
   color: white;
 }
 
 .btnPrimary:hover {
-  background: #5568d3;
+  background: #e57a00;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 138, 0, 0.3);
 }
 
 .btnSuccess {
@@ -372,6 +475,90 @@
 .emptyText {
   color: #718096;
   font-size: 0.9375rem;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContentLarge {
+  background: white;
+  border-radius: 16px;
+  max-width: 1400px;
+  width: 95%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1a202c;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #718096;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.modalBodyLarge {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0;
 }
 
 /* Responsive */

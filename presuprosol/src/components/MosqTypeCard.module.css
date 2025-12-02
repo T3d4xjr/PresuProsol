@@ -1,64 +1,79 @@
-/* Tarjeta de tipo de producto */
+/* === TARJETA === */
 .card {
-  background: var(--surface);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border-radius: 20px;
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  transition: .25s ease;
   cursor: pointer;
+
+  width: 100%;
+  max-width: 380px;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  max-width: 380px;
-  width: 100%;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 18px 45px rgba(0,0,0,0.12);
 }
 
-/* Contenedor de imagen */
+/* === CONTENEDOR IMAGEN === */
 .imageContainer {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
+  height: 260px; /* Ajustable a 280 o 300 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(180deg,#fafafa 0%,#eaeaea 100%);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   overflow: hidden;
-  background: #f5f5f5;
 }
 
+/* === IMAGEN — COMPLETA Y SIN RECORTAR === */
 .image {
-  object-fit: cover;
+  object-fit: contain !important;
+  object-position: center bottom !important; /* Oculta letras superiores */
+  padding: 14px;
+  filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.08));
+  transition: transform .25s ease;
 }
 
-/* Cuerpo de la tarjeta */
+.card:hover .image {
+  transform: scale(1.04);
+}
+
+/* === CUERPO TARJETA === */
 .cardBody {
-  padding: 20px;
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  flex: 1;
 }
 
+/* === TÍTULO === */
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text);
-  margin: 0 0 16px 0;
+  color: var(--primary);
+  margin-bottom: 16px;
 }
 
-/* Botón */
+/* === BOTÓN === */
 .button {
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 12px 20px;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
   margin-top: auto;
-  transition: background 0.2s;
   width: 100%;
+  transition: .2s;
 }
 
 .button:hover {

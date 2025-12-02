@@ -20,6 +20,10 @@ export default function AdminPedidos() {
   const { session, profile, loading } = useAuth();
   const [pedidos, setPedidos] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [estadoAbierto, setEstadoAbierto] = useState(null);
+  const [mostrarModalEstado, setMostrarModalEstado] = useState(false);
+  const [filtroPrecio, setFiltroPrecio] = useState("todos");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
 
   useEffect(() => {
     if (!loading && (!session || profile?.rol !== "admin")) {
@@ -96,6 +100,25 @@ export default function AdminPedidos() {
     );
   }
 
+  // Agrupar pedidos por estado
+  const grouped = pedidos.reduce((acc, p) => {
+    const estado = p.estado || "Sin estado";
+    if (!acc[estado]) acc[estado] = [];
+    acc[estado].push(p);
+    return acc;
+  }, {});
+
+  const estadoNombres = {
+    "En proceso": "En Proceso",
+    "Enviando": "Enviando",
+    "Entregado": "Entregado",
+    "Sin estado": "Sin Estado"
+  };
+
+  const getNombreEstado = (estado) => {
+    return estadoNombres[estado] || estado;
+  };
+
   return (
     <>
       <Head>
@@ -106,7 +129,7 @@ export default function AdminPedidos() {
       <div className={styles.pageContainer}>
         <main className={styles.mainContent}>
           <div className={styles.header}>
-            <h1 className={styles.title}>🚚 Gestión de Pedidos</h1>
+            <h1 className={styles.title}>Gestión de Pedidos</h1>
             <button
               onClick={() => router.push("/perfil")}
               className={styles.btnBack}
@@ -125,10 +148,105 @@ export default function AdminPedidos() {
             </div>
           ) : (
             <>
-              <div className={styles.statsCard}>
-                📊 Total de pedidos: <strong>{pedidos.length}</strong>
+              <div className={styles.filterSection}>
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => setFiltroEstado(e.target.value)}
+                  className={styles.filterSelect}
+                >
+                  <option value="todos">Todos los estados</option>
+                  <option value="En proceso">En Proceso</option>
+                  <option value="Enviando">Enviando</option>
+                  <option value="Entregado">Entregado</option>
+                </select>
+                <select
+                  value={filtroPrecio}
+                  onChange={(e) => setFiltroPrecio(e.target.value)}
+                  className={styles.filterSelect}
+                >
+                  <option value="todos">Todos los precios</option>
+                  <option value="0-500">0€ - 500€</option>
+                  <option value="500-1000">500€ - 1000€</option>
+                  <option value="1000-2500">1000€ - 2500€</option>
+                  <option value="2500+">2500€ o más</option>
+                </select>
               </div>
 
+              <div className={styles.categoriesGrid}>
+                {Object.keys(grouped).sort().map((estado) => {
+                  const pedidosEstado = grouped[estado].filter((p) => {
+                    const matchEstado = filtroEstado === "todos" || p.estado === filtroEstado;
+                    
+                    let matchPrecio = true;
+                    if (filtroPrecio !== "todos") {
+                      const total = p.total || 0;
+                      if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
+                      else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
+                      else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
+                      else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
+                    }
+                    
+                    return matchEstado && matchPrecio;
+                  });
+                  
+                  if (pedidosEstado.length === 0) return null;
+                  
+                  const totalEstado = pedidosEstado.reduce((sum, p) => sum + (p.total || 0), 0);
+                  
+                  return (
+                    <div key={estado} className={styles.categoryCard}>
+                      <div 
+                        className={styles.categoryHeader}
+                        onClick={() => {
+                          setEstadoAbierto(estado);
+                          setMostrarModalEstado(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className={styles.categoryInfo}>
+                          <h3 className={styles.categoryCardTitle}>{getNombreEstado(estado)}</h3>
+                          <div className={styles.categoryStats}>
+                            <span className={styles.statBadge}>
+                              {pedidosEstado.length} pedido{pedidosEstado.length !== 1 ? 's' : ''}
+                            </span>
+                            <span className={styles.statTotal}>
+                              Total: {totalEstado.toFixed(2)} €
+                            </span>
+                          </div>
+                        </div>
+                        <div className={styles.expandIcon}>
+                          ▶
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </main>
+      </div>
+
+      {/* Modal de estado */}
+      {mostrarModalEstado && estadoAbierto && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setMostrarModalEstado(false)}
+        >
+          <div
+            className={styles.modalContentLarge}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h5 className={styles.modalTitle}>{getNombreEstado(estadoAbierto)}</h5>
+              <button
+                className={styles.closeButton}
+                onClick={() => setMostrarModalEstado(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBodyLarge}>
               <div className={styles.tableContainer}>
                 <table className={styles.table}>
                   <thead>
@@ -142,68 +260,83 @@ export default function AdminPedidos() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pedidos.map((p) => (
-                      <tr key={p.id}>
-                        <td>
-                          {new Date(p.created_at).toLocaleDateString("es-ES")}
-                        </td>
-                        <td>
-                          <div className={styles.userName}>{p.usuario_nombre}</div>
-                          <small className={styles.userEmail}>{p.usuario_email}</small>
-                        </td>
-                        <td>
-                          <span className={`${styles.badge} ${styles.badgeInfo}`}>
-                            {p.presupuesto_tipo}
-                          </span>
-                        </td>
-                        <td className={styles.totalPrice}>
-                          {p.total?.toFixed(2)} €
-                        </td>
-                        <td>
-                          <span
-                            className={`${styles.badge} ${
-                              p.estado === "En proceso"
-                                ? styles.badgeWarning
-                                : p.estado === "Enviando"
-                                ? styles.badgePrimary
-                                : styles.badgeSuccess
-                            }`}
-                          >
-                            {p.estado}
-                          </span>
-                        </td>
-                        <td>
-                          {p.estado === "En proceso" && (
-                            <button
-                              className={`${styles.btn} ${styles.btnPrimary}`}
-                              onClick={() => cambiarEstado(p.id, "Enviando")}
-                            >
-                              📤 Marcar como Enviando
-                            </button>
-                          )}
-                          {p.estado === "Enviando" && (
-                            <button
-                              className={`${styles.btn} ${styles.btnSuccess}`}
-                              onClick={() => cambiarEstado(p.id, "Entregado")}
-                            >
-                              ✅ Marcar como Entregado
-                            </button>
-                          )}
-                          {p.estado === "Entregado" && (
-                            <span className={styles.completed}>
-                              ✅ Completado
+                    {grouped[estadoAbierto]
+                      .filter((p) => {
+                        const matchEstado = filtroEstado === "todos" || p.estado === filtroEstado;
+                        
+                        let matchPrecio = true;
+                        if (filtroPrecio !== "todos") {
+                          const total = p.total || 0;
+                          if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
+                          else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
+                          else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
+                          else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
+                        }
+                        
+                        return matchEstado && matchPrecio;
+                      })
+                      .map((p) => (
+                        <tr key={p.id}>
+                          <td>
+                            {new Date(p.created_at).toLocaleDateString("es-ES")}
+                          </td>
+                          <td>
+                            <div className={styles.userName}>{p.usuario_nombre}</div>
+                            <small className={styles.userEmail}>{p.usuario_email}</small>
+                          </td>
+                          <td>
+                            <span className={`${styles.badge} ${styles.badgeInfo}`}>
+                              {p.presupuesto_tipo}
                             </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className={styles.totalPrice}>
+                            {p.total?.toFixed(2)} €
+                          </td>
+                          <td>
+                            <span
+                              className={`${styles.badge} ${
+                                p.estado === "En proceso"
+                                  ? styles.badgeWarning
+                                  : p.estado === "Enviando"
+                                  ? styles.badgePrimary
+                                  : styles.badgeSuccess
+                              }`}
+                            >
+                              {p.estado}
+                            </span>
+                          </td>
+                          <td>
+                            {p.estado === "En proceso" && (
+                              <button
+                                className={`${styles.btn} ${styles.btnPrimary}`}
+                                onClick={() => cambiarEstado(p.id, "Enviando")}
+                              >
+                                📤 Marcar como Enviando
+                              </button>
+                            )}
+                            {p.estado === "Enviando" && (
+                              <button
+                                className={`${styles.btn} ${styles.btnSuccess}`}
+                                onClick={() => cambiarEstado(p.id, "Entregado")}
+                              >
+                                ✅ Marcar como Entregado
+                              </button>
+                            )}
+                            {p.estado === "Entregado" && (
+                              <span className={styles.completed}>
+                                ✅ Completado
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
-            </>
-          )}
-        </main>
-      </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
