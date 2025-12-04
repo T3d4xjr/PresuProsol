@@ -9,7 +9,7 @@ import LoginAlert from "../components/LoginAlert"; // modal personalizado
 
 export default function Home() {
   const router = useRouter();
-  const { session, profile, loading } = useAuth(); // 👈 también profile y loading
+  const { session, profile, loading } = useAuth(); 
   const [showAlert, setShowAlert] = useState(false);
 
   // Usuario realmente permitido (logueado y habilitado)
@@ -35,7 +35,7 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
-  // 👇 manejador genérico para cualquier acción protegida
+  
   const handleProtectedClick = (href) => {
     // mientras carga auth, mejor no hacer nada
     if (loading) return;

@@ -22,9 +22,9 @@ export default function MisPresupuestos() {
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
   const [presupuestoAEliminar, setPresupuestoAEliminar] = useState(null);
-  const [categoriaAbierta, setCategoriaAbierta] = useState(null);
-  const [mostrarModalCategoria, setMostrarModalCategoria] = useState(false);
   const [filtroPrecio, setFiltroPrecio] = useState("todos");
+  const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [ordenamiento, setOrdenamiento] = useState("fecha-desc");
 
   useEffect(() => {
     if (!loading && !session) {
@@ -43,6 +43,8 @@ export default function MisPresupuestos() {
     setLoadingData(true);
     try {
       const data = await fetchPresupuestosUsuario(session.user.id);
+      
+      
       setPresupuestos(data);
     } catch (error) {
       console.error("Error cargando presupuestos:", error);
@@ -74,17 +76,44 @@ export default function MisPresupuestos() {
   }
 
   function handleEditar(presupuesto) {
-    console.log("📝 Editando presupuesto:", presupuesto);
+    
 
     if (presupuesto.pagado) {
       alert("⚠️ No puedes editar un presupuesto ya pagado");
       return;
     }
 
+    if (presupuesto.invalidado) {
+      alert(`⚠️ Este presupuesto no se puede editar\n\nMotivo: ${presupuesto.razon_invalidacion || "Producto eliminado del catálogo"}`);
+      return;
+    }
+
+    if (presupuesto.precio_desactualizado) {
+      const confirmar = confirm(
+        "⚠️ ATENCIÓN: Los precios de este presupuesto están desactualizados\n\n" +
+        "Si editas este presupuesto, se recalcularán con los nuevos precios del catálogo.\n\n" +
+        "¿Deseas continuar?"
+      );
+      if (!confirmar) return;
+    }
+
     router.push(`/editar-presupuesto/${presupuesto.id}`);
   }
 
   function abrirModalPago(presupuesto) {
+    if (presupuesto.invalidado) {
+      alert(`⚠️ Este presupuesto no se puede pagar\n\nMotivo: ${presupuesto.razon_invalidacion || "Producto eliminado del catálogo"}`);
+      return;
+    }
+
+    if (presupuesto.precio_desactualizado) {
+      alert(
+        "⚠️ ATENCIÓN: Los precios de este presupuesto están desactualizados\n\n" +
+        "Por favor, edita el presupuesto para actualizar los precios antes de pagar."
+      );
+      return;
+    }
+
     setPresupuestoSeleccionado(presupuesto);
     setMostrarModalPago(true);
   }
@@ -298,7 +327,6 @@ export default function MisPresupuestos() {
       }.pdf`;
       pdf.save(fileName);
 
-      console.log(`✅ PDF generado: ${page} página(s)`);
     } catch (error) {
       console.error("❌ Error generando PDF:", error);
       alert("Error al generar el PDF. Por favor, inténtalo de nuevo.");
@@ -351,6 +379,40 @@ export default function MisPresupuestos() {
     return categoriaNombres[tipo] || tipo;
   };
 
+  // Filtrar y ordenar presupuestos
+  const presupuestosFiltrados = presupuestos
+    .filter((p) => {
+      // Filtro de precio
+      let matchPrecio = true;
+      if (filtroPrecio !== "todos") {
+        const total = p.total || 0;
+        if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
+        else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
+        else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
+        else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
+      }
+
+      // Filtro de tipo
+      const matchTipo = filtroTipo === "todos" || p.tipo === filtroTipo;
+
+      return matchPrecio && matchTipo;
+    })
+    .sort((a, b) => {
+      if (ordenamiento === "fecha-desc") {
+        return new Date(b.created_at) - new Date(a.created_at);
+      } else if (ordenamiento === "fecha-asc") {
+        return new Date(a.created_at) - new Date(b.created_at);
+      } else if (ordenamiento === "precio-desc") {
+        return (b.total || 0) - (a.total || 0);
+      } else if (ordenamiento === "precio-asc") {
+        return (a.total || 0) - (b.total || 0);
+      }
+      return 0;
+    });
+
+  // Obtener todos los tipos únicos para el filtro
+  const tiposUnicos = [...new Set(presupuestos.map(p => p.tipo))].sort();
+
   return (
     <>
       <Head>
@@ -378,97 +440,57 @@ export default function MisPresupuestos() {
         )}
 
         {presupuestos.length > 0 && (
-          <div className={styles.filterSection}>
-            <select
-              value={filtroPrecio}
-              onChange={(e) => setFiltroPrecio(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="todos">Todos los precios</option>
-              <option value="0-500">0€ - 500€</option>
-              <option value="500-1000">500€ - 1000€</option>
-              <option value="1000-2500">1000€ - 2500€</option>
-              <option value="2500+">2500€ o más</option>
-            </select>
-          </div>
-        )}
-
-        <div className={styles.categoriesGrid}>
-          {Object.keys(grouped).sort().map((categoria) => {
-            const presupuestosCategoria = grouped[categoria].filter((p) => {
-              // Filtro de precio
-              let matchPrecio = true;
-              if (filtroPrecio !== "todos") {
-                const total = p.total || 0;
-                if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
-                else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
-                else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
-                else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
-              }
-              
-              return matchPrecio;
-            });
-            
-            if (presupuestosCategoria.length === 0) return null;
-            
-            const totalCategoria = presupuestosCategoria.reduce((sum, p) => sum + (p.total || 0), 0);
-            
-            return (
-              <div key={categoria} className={styles.categoryCard}>
-                <div 
-                  className={styles.categoryHeader}
-                  onClick={() => {
-                    setCategoriaAbierta(categoria);
-                    setMostrarModalCategoria(true);
-                  }}
-                  style={{ cursor: 'pointer' }}
+          <>
+            <div className={styles.filtersContainer}>
+              <div className={styles.filterRow}>
+                <select
+                  value={filtroTipo}
+                  onChange={(e) => setFiltroTipo(e.target.value)}
+                  className={styles.filterSelect}
                 >
-                  <div className={styles.categoryInfo}>
-                    <h3 className={styles.categoryCardTitle}>{getNombreCategoria(categoria)}</h3>
-                    <div className={styles.categoryStats}>
-                      <span className={styles.statBadge}>
-                        {presupuestosCategoria.length} presupuesto{presupuestosCategoria.length !== 1 ? 's' : ''}
-                      </span>
-                      <span className={styles.statTotal}>
-                        Total: {totalCategoria.toFixed(2)} €
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.expandIcon}>
-                    ▶
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </main>
+                  <option value="todos">Todos los tipos</option>
+                  {tiposUnicos.map(tipo => (
+                    <option key={tipo} value={tipo}>{getNombreCategoria(tipo)}</option>
+                  ))}
+                </select>
 
-      {/* Modal de categoría */}
-      {mostrarModalCategoria && categoriaAbierta && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setMostrarModalCategoria(false)}
-        >
-          <div
-            className={styles.modalContentLarge}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.modalHeader}>
-              <h5 className={styles.modalTitle}>{getNombreCategoria(categoriaAbierta)}</h5>
-              <button
-                className={styles.closeButton}
-                onClick={() => setMostrarModalCategoria(false)}
-              >
-                ×
-              </button>
+                <select
+                  value={filtroPrecio}
+                  onChange={(e) => setFiltroPrecio(e.target.value)}
+                  className={styles.filterSelect}
+                >
+                  <option value="todos">Todos los precios</option>
+                  <option value="0-500">0€ - 500€</option>
+                  <option value="500-1000">500€ - 1000€</option>
+                  <option value="1000-2500">1000€ - 2500€</option>
+                  <option value="2500+">2500€ o más</option>
+                </select>
+
+                <select
+                  value={ordenamiento}
+                  onChange={(e) => setOrdenamiento(e.target.value)}
+                  className={styles.filterSelect}
+                >
+                  <option value="fecha-desc">Más recientes</option>
+                  <option value="fecha-asc">Más antiguos</option>
+                  <option value="precio-desc">Precio mayor</option>
+                  <option value="precio-asc">Precio menor</option>
+                </select>
+              </div>
+
+              {(filtroTipo !== "todos" || filtroPrecio !== "todos") && (
+                <div className={styles.resultsCount}>
+                  Mostrando {presupuestosFiltrados.length} de {presupuestos.length} presupuestos
+                </div>
+              )}
             </div>
-            <div className={styles.modalBodyLarge}>
-              <div className={styles.tableContainer}>
+
+            <div className={styles.tableContainer}>
               <table className={styles.table}>
                 <thead>
                   <tr>
                     <th>Fecha</th>
+                    <th>Tipo</th>
                     <th>Cliente</th>
                     <th>Detalles</th>
                     <th>Total</th>
@@ -477,23 +499,15 @@ export default function MisPresupuestos() {
                   </tr>
                 </thead>
                 <tbody>
-                  {grouped[categoriaAbierta]
-                    .filter((p) => {
-                      let matchPrecio = true;
-                      if (filtroPrecio !== "todos") {
-                        const total = p.total || 0;
-                        if (filtroPrecio === "0-500") matchPrecio = total >= 0 && total <= 500;
-                        else if (filtroPrecio === "500-1000") matchPrecio = total > 500 && total <= 1000;
-                        else if (filtroPrecio === "1000-2500") matchPrecio = total > 1000 && total <= 2500;
-                        else if (filtroPrecio === "2500+") matchPrecio = total > 2500;
-                      }
-                      
-                      return matchPrecio;
-                    })
-                    .map((p) => (
+                  {presupuestosFiltrados.map((p) => (
                     <tr key={p.id}>
                       <td>
                         {new Date(p.created_at).toLocaleDateString("es-ES")}
+                      </td>
+                      <td>
+                        <span className={styles.tipoBadge}>
+                          {getNombreCategoria(p.tipo)}
+                        </span>
                       </td>
                       <td>
                         <div className={styles.clientName}>
@@ -504,16 +518,39 @@ export default function MisPresupuestos() {
                         </small>
                       </td>
                       <td>
-                        {p.alto_mm && p.ancho_mm && (
+                        {/* Medidas según tipo de producto */}
+                        {p.tipo?.includes("pergola") && p.ancho_mm && p.fondo_mm ? (
+                          <div className={styles.detailItem}>
+                            {p.ancho_mm} × {p.fondo_mm} mm
+                          </div>
+                        ) : p.alto_mm && p.ancho_mm ? (
                           <div className={styles.detailItem}>
                             {p.alto_mm} × {p.ancho_mm} mm
                           </div>
+                        ) : null}
+                        
+                        {/* Modelo para compactos, paños, protección solar */}
+                        {p.modelo && (
+                          <div className={styles.detailItem}>
+                            {p.modelo}
+                          </div>
                         )}
+                        
+                        {/* Acabado para compactos, paños */}
+                        {p.acabado && (
+                          <div className={styles.detailItem}>
+                            {p.acabado}
+                          </div>
+                        )}
+                        
+                        {/* Color */}
                         {p.color && (
                           <div className={styles.detailItem}>
                             Color: {p.color}
                           </div>
                         )}
+                        
+                        {/* Accesorios */}
                         {p.accesorios && p.accesorios.length > 0 && (
                           <div className={styles.detailItem}>
                             {p.accesorios.length} accesorio
@@ -527,11 +564,11 @@ export default function MisPresupuestos() {
                       <td>
                         {p.pagado ? (
                           <span className={`${styles.badge} ${styles.badgePaid}`}>
-                            ✅ Pagado
+                            Pagado
                           </span>
                         ) : (
                           <span className={`${styles.badge} ${styles.badgePending}`}>
-                            ⏳ Pendiente
+                            Pendiente
                           </span>
                         )}
                       </td>
@@ -543,29 +580,59 @@ export default function MisPresupuestos() {
                           >
                             📄 Descargar PDF
                           </button>
-                        ) : (
-                          <div className={styles.btnGroup}>
-                            <button
-                              className={`${styles.btn} ${styles.btnEdit}`}
-                              onClick={() => handleEditar(p)}
-                              title="Editar presupuesto"
-                            >
-                              ✏️ Editar
-                            </button>
-                            <button
-                              className={`${styles.btn} ${styles.btnPay}`}
-                              onClick={() => abrirModalPago(p)}
-                              title="Proceder al pago"
-                            >
-                              💳 Pagar
-                            </button>
+                        ) : p.invalidado ? (
+                          <div className={styles.invalidadoContainer}>
+                            <div className={styles.alertInvalidado}>
+                              <div className={styles.alertIcon}>⚠️</div>
+                              <div className={styles.alertContent}>
+                                <div className={styles.alertTitle}>Presupuesto no disponible</div>
+                                <div className={styles.alertMessage}>{p.razon_invalidacion || "Producto eliminado del catálogo"}</div>
+                              </div>
+                            </div>
                             <button
                               className={`${styles.btn} ${styles.btnDelete}`}
                               onClick={() => abrirModalEliminar(p)}
                               title="Eliminar presupuesto"
                             >
-                              🗑️
+                              Eliminar
                             </button>
+                          </div>
+                        ) : (
+                          <div>
+                            {p.precio_desactualizado && (
+                              <div className={styles.alertDesactualizado}>
+                                <div className={styles.alertIconSmall}>⚠️</div>
+                                <div>
+                                  <div className={styles.alertTitleSmall}>Precios desactualizados</div>
+                                  <div className={styles.alertMessageSmall}>Edita para actualizar</div>
+                                </div>
+                              </div>
+                            )}
+                            <div className={styles.btnGroup} style={{ marginTop: p.precio_desactualizado ? '0.75rem' : '0' }}>
+                              <button
+                                className={`${styles.btn} ${styles.btnEdit}`}
+                                onClick={() => handleEditar(p)}
+                                title="Editar presupuesto"
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button
+                                className={`${styles.btn} ${styles.btnPay}`}
+                                onClick={() => abrirModalPago(p)}
+                                title="Proceder al pago"
+                                disabled={p.precio_desactualizado}
+                                style={{ opacity: p.precio_desactualizado ? 0.5 : 1, cursor: p.precio_desactualizado ? 'not-allowed' : 'pointer' }}
+                              >
+                                Pagar
+                              </button>
+                              <button
+                                className={`${styles.btn} ${styles.btnDelete}`}
+                                onClick={() => abrirModalEliminar(p)}
+                                title="Eliminar presupuesto"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
                           </div>
                         )}
                       </td>
@@ -573,11 +640,18 @@ export default function MisPresupuestos() {
                   ))}
                 </tbody>
               </table>
+
+              {presupuestosFiltrados.length === 0 && (
+                <div className={styles.emptyState}>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>
+                    No se encontraron presupuestos con los filtros aplicados
+                  </p>
+                </div>
+              )}
             </div>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </main>
 
       {/* Modal eliminar */}
       {mostrarModalEliminar && presupuestoAEliminar && (
@@ -590,7 +664,7 @@ export default function MisPresupuestos() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={`${styles.modalHeader} ${styles.modalHeaderDanger}`}>
-              <h5 className={styles.modalTitle}>🗑️ Eliminar Presupuesto</h5>
+              <h5 className={styles.modalTitle}>Eliminar Presupuesto</h5>
               <button
                 className={styles.closeButton}
                 onClick={cerrarModalEliminar}

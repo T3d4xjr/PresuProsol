@@ -11,11 +11,7 @@ export default function PuertasForm({
   guardando = false,
   modoEdicion = false,
 }) {
-  console.log("📦 [PuertasForm] Props:", {
-    modoEdicion,
-    tieneDatos: !!datosIniciales,
-    guardando,
-  });
+  
 
   // Detectar tipo desde datosIniciales.tipo
   // Tipos: "puerta-seccional-residencial", "puerta-seccional-industrial"
@@ -26,7 +22,7 @@ export default function PuertasForm({
       ? "industrial"
       : "residencial"; // Por defecto
 
-  console.log("🚪 Tipo de puerta detectado:", tipo);
+  
 
   return (
     <ConfigPuertaSeccional

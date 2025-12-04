@@ -6,13 +6,13 @@ import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
 import styles from "../../styles/Admin.module.css";
 
-// 👉 Helpers de pedidos (Supabase encapsulado)
+
 import {
   fetchAdminPedidos,
   updatePedidoEstado,
 } from "../api/admin-pedidos-api";
 
-// 👉 Email de pedido enviado
+
 import { enviarAvisoPedidoEnviado } from "../../lib/emailNotifications";
 
 export default function AdminPedidos() {
@@ -57,9 +57,9 @@ export default function AdminPedidos() {
     setLoadingData(false);
   }
 
-  // 🔄 Cambiar estado y, si pasa a "Enviando", enviar email al cliente
+  
   async function cambiarEstado(id, nuevoEstado) {
-    console.log(`🔄 Cambiando estado del pedido ${id} a: ${nuevoEstado}`);
+    
 
     // Buscar pedido en memoria para obtener email y nombre
     const pedido = pedidos.find((p) => p.id === id);
@@ -72,7 +72,7 @@ export default function AdminPedidos() {
     } else {
       console.log("✅ Estado actualizado correctamente");
 
-      // 📧 Solo cuando pasa a "Enviando"
+      
       if (nuevoEstado === "Enviando" && pedido) {
         enviarAvisoPedidoEnviado({
           email: pedido.usuario_email,

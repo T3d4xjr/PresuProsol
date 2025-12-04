@@ -11,11 +11,7 @@ export default function PergolasForm({
   guardando = false,
   modoEdicion = false,
 }) {
-  console.log("📦 [PergolasForm] Props:", {
-    modoEdicion,
-    tieneDatos: !!datosIniciales,
-    guardando,
-  });
+  
 
   return (
     <ConfigPergola

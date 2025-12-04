@@ -14,7 +14,7 @@ export async function registrarSolicitudAcceso({ usuario, email, cif, pass }) {
   }
 
   const authUser = data.user;
-  console.log("[API REGISTRO] ✅ Usuario creado en Auth:", authUser.id);
+  
 
   // Insertar solicitud en administracion_usuarios
   const { error: insertErr } = await supabase
@@ -38,6 +38,6 @@ export async function registrarSolicitudAcceso({ usuario, email, cif, pass }) {
     throw insertErr; // se captura en el componente
   }
 
-  console.log("[API REGISTRO] ✅ Solicitud guardada correctamente");
+  
   return { user: authUser };
 }

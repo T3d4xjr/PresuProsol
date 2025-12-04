@@ -81,7 +81,7 @@ export default function EditarPresupuesto() {
   async function cargarPresupuesto() {
     setLoading(true);
     try {
-      console.log("🔍 Cargando presupuesto ID:", id);
+      
 
       const { data, error } = await supabase
         .from("presupuestos")
@@ -112,18 +112,18 @@ export default function EditarPresupuesto() {
         return;
       }
 
-      console.log("✅ Presupuesto cargado:", data);
+      
       setPresupuesto(data);
 
       const tipoPresupuesto = (data.tipo || "").toLowerCase();
-      console.log("   Tipo detectado:", tipoPresupuesto);
+      
 
       const tipoEncontrado = TIPOS_PRODUCTOS.find((t) =>
         t.match.some((m) => tipoPresupuesto.includes(m))
       );
 
       if (tipoEncontrado) {
-        console.log("✅ Tipo de producto:", tipoEncontrado.nombre);
+        
         setTipoProducto(tipoEncontrado);
       } else {
         console.warn("⚠️ Tipo de producto no reconocido:", tipoPresupuesto);
@@ -144,7 +144,7 @@ export default function EditarPresupuesto() {
   async function handleGuardarPresupuesto(datosPresupuesto) {
     setGuardando(true);
     try {
-      console.log("💾 Guardando cambios:", datosPresupuesto);
+      
 
       const updateData = {
         cliente: datosPresupuesto.cliente,

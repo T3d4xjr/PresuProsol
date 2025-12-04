@@ -28,7 +28,7 @@ export default function TerminosCondiciones() {
       try {
         setCargando(true);
         const data = await fetchTerminosActivos();
-        console.log("✅ Términos cargados:", data?.length);
+        
         setSecciones(data);
       } catch (e) {
         console.error("💥 Exception cargando términos:", e);

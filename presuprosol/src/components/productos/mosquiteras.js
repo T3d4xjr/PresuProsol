@@ -11,12 +11,7 @@ export default function MosquiterasForm({
   guardando = false, 
   modoEdicion = false 
 }) {
-  console.log("📦 [MosquiterasForm Wrapper] Props recibidas:", {
-    modoEdicion,
-    tieneDatosIniciales: !!datosIniciales,
-    tieneOnSubmit: !!onSubmit,
-    guardando
-  });
+  
 
   // Determinar el tipo desde datosIniciales
   const tipoDetectado = datosIniciales?.tipo?.toLowerCase() || "";
@@ -30,7 +25,7 @@ export default function MosquiterasForm({
   else if (tipoDetectado.includes("abatible")) tipo = "abatible";
   else if (tipoDetectado.includes("lateral")) tipo = "lateral";
 
-  console.log("   Tipo detectado:", tipo);
+  
 
   return (
     <ConfigMosquitera

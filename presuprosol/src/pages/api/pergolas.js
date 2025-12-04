@@ -1,72 +1,99 @@
 // src/pages/api/pergolas.js
 import { supabase } from "../../lib/supabaseClient";
 
-// 📦 Cargar catálogo (medidas, colores, accesorios)
+
 export async function fetchCatalogoPergolas() {
-  console.log("🔄 [API] Cargando catálogo pérgolas…");
+  
 
   // MEDIDAS
   let medidas = [];
   const { data: m, error: mErr } = await supabase
     .from("pergolas_medidas")
-    .select("*");
+    .select("*")
+    .eq("activo", true); // Filtrar solo activos desde el query
 
-  console.log("📏 [API MEDIDAS]", { total: m?.length || 0 });
+  
 
   if (mErr) {
     console.error("[API pergolas_medidas] error:", mErr);
   } else {
-    const activos = (m || []).filter((x) => x.activo === true);
-    console.log("✅ [API MEDIDAS] activas:", activos.length);
-    medidas = activos.sort((a, b) => {
+    medidas = (m || []).sort((a, b) => {
       if (a.ancho_mm !== b.ancho_mm) return a.ancho_mm - b.ancho_mm;
       return a.fondo_mm - b.fondo_mm;
     });
+    
   }
 
   // COLORES
   let colores = [];
   const { data: c, error: cErr } = await supabase
     .from("pergolas_colores")
-    .select("*");
+    .select("*")
+    .eq("activo", true); // Filtrar solo activos desde el query
 
-  console.log("🎨 [API COLORES]", { total: c?.length || 0 });
+  
 
   if (cErr) {
     console.error("[API pergolas_colores] error:", cErr);
   } else {
-    const activos = (c || []).filter((x) => x.activo === true);
-    console.log("✅ [API COLORES] activos:", activos.length);
-    colores = activos.sort(
+    colores = (c || []).sort(
       (a, b) => (a.incremento_eur_m2 || 0) - (b.incremento_eur_m2 || 0)
     );
+    
   }
 
   // ACCESORIOS
   let accesorios = [];
   const { data: acc, error: accErr } = await supabase
     .from("pergolas_accesorios")
-    .select("*");
+    .select("*")
+    .eq("activo", true); // Filtrar solo activos desde el query
 
-  console.log("🔧 [API ACCESORIOS]", { total: acc?.length || 0 });
+  
 
   if (accErr) {
     console.error("[API pergolas_accesorios] error:", accErr);
   } else {
-    const activos = (acc || []).filter((x) => x.activo === true);
-    console.log("✅ [API ACCESORIOS] activos:", activos.length);
-    accesorios = activos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    accesorios = (acc || []).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    
   }
 
   return { medidas, colores, accesorios };
 }
 
-// 💸 Descuento cliente
+
+export async function fetchCombinacionesPergolas() {
+  try {
+    const { data, error } = await supabase
+      .from("pergolas_precios")
+      .select("ancho_mm, fondo_mm, color_id, precio_m2")
+      .gt("precio_m2", 0);
+
+    if (error) {
+      console.error("[API combinaciones pergolas] error:", error);
+      return [];
+    }
+
+    const combinaciones = (data || []).map(p => ({
+      ancho_mm: p.ancho_mm,
+      fondo_mm: p.fondo_mm,
+      color_id: p.color_id
+    }));
+
+    
+    return combinaciones;
+  } catch (e) {
+    console.error("[API combinaciones pergolas] exception:", e);
+    return [];
+  }
+}
+
+
 export async function fetchDescuentoClientePergolas(userId) {
   if (!userId) return 0;
 
   try {
-    console.log("[API pergolas descuento] buscando para auth_user_id:", userId);
+    
 
     const { data, error, status } = await supabase
       .from("administracion_usuarios")
@@ -74,7 +101,7 @@ export async function fetchDescuentoClientePergolas(userId) {
       .or(`auth_user_id.eq.${userId},id.eq.${userId}`)
       .maybeSingle();
 
-    console.log("[API pergolas descuento] status:", status, "data:", data);
+    
 
     if (error) {
       console.warn("[API pergolas descuento] error:", error);
@@ -87,7 +114,7 @@ export async function fetchDescuentoClientePergolas(userId) {
     }
 
     const pct = Number(data?.descuento ?? data?.descuento_cliente ?? 0);
-    console.log("[API pergolas descuento] aplicado =", pct, "%");
+    
 
     return Number.isFinite(pct) ? pct : 0;
   } catch (e) {
@@ -96,18 +123,14 @@ export async function fetchDescuentoClientePergolas(userId) {
   }
 }
 
-// 💰 Precio base + incremento color
+
 export async function fetchPrecioPergola({ ancho_mm, fondo_mm, colorId }) {
   if (!ancho_mm || !fondo_mm || !colorId) {
     return { precio: null, incrementoColor: 0 };
   }
 
   try {
-    console.log("💰 [API PRECIO PÉRGOLA] buscando:", {
-      ancho_mm,
-      fondo_mm,
-      colorId,
-    });
+    
 
     const { data, error } = await supabase
       .from("pergolas_precios")
@@ -122,7 +145,7 @@ export async function fetchPrecioPergola({ ancho_mm, fondo_mm, colorId }) {
       .eq("color_id", colorId)
       .maybeSingle();
 
-    console.log("🎯 [API PRECIO PÉRGOLA] resultado:", { data, error });
+    
 
     if (error || !data) {
       console.warn("⚠️ [API PRECIO PÉRGOLA] no encontrado");
@@ -138,12 +161,7 @@ export async function fetchPrecioPergola({ ancho_mm, fondo_mm, colorId }) {
         Number(data.color.incremento_eur_m2 || 0) * areaM2;
     }
 
-    console.log("✅ [API PRECIO PÉRGOLA] calculado:", {
-      areaM2,
-      precio_m2: data.precio_m2,
-      precioCalculado,
-      incrementoColor,
-    });
+    
 
     return {
       precio: +precioCalculado.toFixed(2),
@@ -155,7 +173,7 @@ export async function fetchPrecioPergola({ ancho_mm, fondo_mm, colorId }) {
   }
 }
 
-// 🧾 Insertar presupuesto
+
 export async function insertarPresupuestoPergola(payload) {
   const { error } = await supabase.from("presupuestos").insert([payload]);
 

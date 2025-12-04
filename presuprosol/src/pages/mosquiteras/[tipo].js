@@ -20,7 +20,7 @@ import {
 const calcColorIncrement = (alto, ancho, precioMl) => {
   const perimetro = 2 * (Number(alto) + Number(ancho)); // mm
   const inc = (perimetro / 1000) * Number(precioMl || 0);
-  console.log("[calcColorIncrement]", { alto, ancho, precioMl, perimetro, inc });
+  
   return inc;
 };
 
@@ -30,13 +30,13 @@ const calcAccesoriosTotal = (accSel) => {
     0
   );
   console.table(accSel);
-  console.log("[calcAccesoriosTotal] total:", total);
+  
   return total;
 };
 
 const applyDiscount = (subtotal, descuento) => {
   const tot = Number(subtotal) * (1 - Number(descuento || 0) / 100);
-  console.log("[applyDiscount]", { subtotal, descuento, tot });
+  
   return tot;
 };
 
@@ -96,11 +96,12 @@ export default function ConfigMosquitera({
 
   const { session, profile, loading } = useAuth();
 
-  console.log("🔄 [RENDER MOSQUITERA]", { tipo, modoEdicion, loading });
+  
 
   // Datos
   const [anchos, setAnchos] = useState([]);
   const [altos, setAltos] = useState([]);
+  const [combinaciones, setCombinaciones] = useState([]);
   const [colores, setColores] = useState([]);
   const [accesorios, setAccesorios] = useState([]);
 
@@ -122,12 +123,7 @@ export default function ConfigMosquitera({
   const [rangoPrecio, setRangoPrecio] = useState("todos"); // 'todos', '0-10', '10-20', '20-50', '50+'
   const [saving, setSaving] = useState(false);
 
-  console.log("📊 [ESTADOS]", {
-    altosLength: altos.length,
-    anchosLength: anchos.length,
-    coloresLength: colores.length,
-    accesoriosLength: accesorios.length,
-  });
+  
 
   /* 🔒 Protección */
   useEffect(() => {
@@ -139,19 +135,20 @@ export default function ConfigMosquitera({
   /* 📏 Cargar medidas */
   useEffect(() => {
     if (!tipo && !modoEdicion) {
-      console.log("⏸️ [MEDIDAS MOSQ] Esperando tipo...");
+      
       return;
     }
 
     let cancelled = false;
 
     const loadMedidas = async () => {
-      console.log("📏 [CARGANDO MEDIDAS MOSQ]", { tipo, modoEdicion });
-      const { altos, anchos } = await fetchMosqMedidas();
+      
+      const { altos, anchos, combinaciones } = await fetchMosqMedidas();
       if (!cancelled) {
-        console.log("✅ Medidas cargadas:", { altos: altos.length, anchos: anchos.length });
+        
         setAltos(altos || []);
         setAnchos(anchos || []);
+        setCombinaciones(combinaciones || []);
       }
     };
 
@@ -166,14 +163,14 @@ export default function ConfigMosquitera({
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        console.log("📦 [CARGANDO CATÁLOGO MOSQ] tipo:", tipo, "modoEdicion:", modoEdicion);
+        
         const { colores, accesorios } = await fetchMosqOptions();
-        console.log("✅ Catálogo cargado:", { colores: colores.length, accesorios: accesorios.length });
-        console.log("🎨 COLORES recibidos:", colores);
-        console.log("📝 Actualizando estados...");
+        
+        
+        
         setColores(colores);
         setAccesorios(accesorios);
-        console.log("✔️ Estados actualizados - colores:", colores, "accesorios:", accesorios);
+        
       } catch (e) {
         console.error("💥 loadOptions exception:", e);
       }
@@ -191,14 +188,14 @@ export default function ConfigMosquitera({
     const loadDesc = async () => {
       const uid = session?.user?.id;
       if (!uid) {
-        console.log("⏸️ [DESCUENTO MOSQ] No hay usuario");
+        
         return;
       }
 
-      console.log("💰 [CARGANDO DESCUENTO MOSQ] uid:", uid);
+      
       const pct = await fetchMosqDescuentoCliente(uid);
       if (!cancelled) {
-        console.log("✅ Descuento cargado:", pct, "%");
+        
         setDescuento(pct);
       }
     };
@@ -214,53 +211,53 @@ export default function ConfigMosquitera({
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
 
-    console.log("📝 [MODO EDICIÓN MOSQUITERA] Cargando datos iniciales:", datosIniciales);
+    
 
     // Cargar medidas
     if (datosIniciales.alto_mm) {
-      console.log("   → Alto:", datosIniciales.alto_mm);
+      
       setAlto(datosIniciales.alto_mm.toString());
     }
     if (datosIniciales.ancho_mm) {
-      console.log("   → Ancho:", datosIniciales.ancho_mm);
+      
       setAncho(datosIniciales.ancho_mm.toString());
     }
 
     // Cargar accesorios
     if (datosIniciales.accesorios && Array.isArray(datosIniciales.accesorios)) {
-      console.log("   → Accesorios:", datosIniciales.accesorios.length);
+      
       setAccSel(datosIniciales.accesorios);
     }
 
     // Cargar precio base
     if (datosIniciales.medida_precio) {
-      console.log("   → Precio base:", datosIniciales.medida_precio);
+      
       setPrecioBase(Number(datosIniciales.medida_precio));
     }
 
     // Cargar incremento color
     if (datosIniciales.color_precio) {
-      console.log("   → Incremento color:", datosIniciales.color_precio);
+      
       setIncColor(Number(datosIniciales.color_precio));
     }
 
     // Cargar descuento
     if (datosIniciales.descuento_cliente && descuento === 0) {
-      console.log("   → Descuento inicial:", datosIniciales.descuento_cliente);
+      
       setDescuento(Number(datosIniciales.descuento_cliente));
     }
   }, [datosIniciales, modoEdicion, descuento]);
 
-  /* ================== ENCONTRAR COLOR POR NOMBRE ================== */
+  
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
     if (colores.length === 0) {
-      console.log("⏸️ [MODO EDICIÓN MOSQUITERA] Esperando colores...");
+      
       return;
     }
 
-    console.log("🔍 [MODO EDICIÓN MOSQUITERA] Buscando color...");
-    console.log("   Color guardado:", datosIniciales.color);
+    
+    
 
     if (datosIniciales.color && !colorId) {
       const colorEncontrado = colores.find(
@@ -268,11 +265,10 @@ export default function ConfigMosquitera({
       );
 
       if (colorEncontrado) {
-        console.log("✅ Color encontrado:", colorEncontrado);
+        
         setColorId(String(colorEncontrado.id));
       } else {
         console.warn("⚠️ No se encontró color:", datosIniciales.color);
-        console.log("   Colores disponibles:", colores.map((c) => c.nombre));
       }
     }
   }, [datosIniciales, modoEdicion, colores, colorId]);
@@ -288,8 +284,7 @@ export default function ConfigMosquitera({
 
     const calc = async () => {
       setMsg("");
-      console.log("---- RECÁLCULO ----");
-      console.log("[inputs]", { alto, ancho, colorId, colorActual, accSel, descuento });
+      
 
       // Precio base
       let base = 0;
@@ -321,7 +316,7 @@ export default function ConfigMosquitera({
       const subtotal = base + inc + acc;
       const tot = applyDiscount(subtotal, descuento);
 
-      console.log("[calc] resultados:", { base, inc, acc, subtotal, descuento, tot });
+      
 
       if (!cancelled) {
         setPrecioBase(Number(base.toFixed(2)));
@@ -340,7 +335,7 @@ export default function ConfigMosquitera({
   /* ✏️ Cambiar unidades de accesorio */
   const setAccUnidades = (acc, unidades) => {
     const uds = Math.max(0, Math.min(10, parseInt(unidades || "0", 10))); // Límite de 10 unidades
-    console.log("[setAccUnidades]", { acc, unidades, uds });
+    
     setAccSel((prev) => {
       const exists = prev.find((x) => x.id === acc.id);
       if (!exists && uds > 0) {
@@ -395,7 +390,7 @@ export default function ConfigMosquitera({
         total: Number(total),
       };
 
-      console.log("💾 [MODO EDICIÓN MOSQUITERA] Enviando datos:", datosPresupuesto);
+      
       onSubmit(datosPresupuesto);
       return;
     }
@@ -405,8 +400,8 @@ export default function ConfigMosquitera({
     setMsg("");
     try {
       console.log("===== GUARDAR PRESUPUESTO MOSQ =====");
-      console.log("[session]", session?.user?.id);
-      console.log("[profile]", profile);
+      
+      
 
       if (!session?.user?.id) {
         console.warn("[guardar] no hay sesión");
@@ -445,13 +440,10 @@ export default function ConfigMosquitera({
         pagado: false,
       };
 
-      console.log("[payload json] >>>");
-      console.log(JSON.stringify(payload, null, 2));
-
       const { data, error, status } = await insertarPresupuestoMosq(payload);
 
-      console.log("[insert presupuestos MOSQ] status:", status);
-      console.log("[insert presupuestos MOSQ] data:", data);
+      
+      
       if (error) {
         console.error("[insert presupuestos MOSQ] error:", error);
         setMsg(
@@ -504,7 +496,10 @@ export default function ConfigMosquitera({
                 <select
                   className={styles.select}
                   value={alto}
-                  onChange={(e) => setAlto(e.target.value)}
+                  onChange={(e) => {
+                    setAlto(e.target.value);
+                    setAncho(""); // Reset ancho cuando cambia alto
+                  }}
                 >
                   <option value="">Selecciona alto…</option>
                   {altos.map((v) => (
@@ -520,15 +515,66 @@ export default function ConfigMosquitera({
                   className={styles.select}
                   value={ancho}
                   onChange={(e) => setAncho(e.target.value)}
+                  disabled={!alto}
                 >
-                  <option value="">Selecciona ancho…</option>
-                  {anchos.map((v) => (
-                    <option key={v} value={v}>
-                      {v} mm
-                    </option>
-                  ))}
+                  <option value="">
+                    {!alto ? "Primero selecciona un alto" : "Selecciona ancho…"}
+                  </option>
+                  {alto && combinaciones
+                    .filter(c => c.alto === Number(alto))
+                    .map(c => c.ancho)
+                    .filter((v, i, arr) => arr.indexOf(v) === i) // Únicos
+                    .sort((a, b) => a - b)
+                    .map((v) => (
+                      <option key={v} value={v}>
+                        {v} mm
+                      </option>
+                    ))}
                 </select>
               </div>
+            </div>
+
+            {/* Colores */}
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Color</h2>
+              {colores.length === 0 && (
+                <p className={styles.emptyMessage}>No hay colores disponibles</p>
+              )}
+              <div className={styles.coloresGrid}>
+                {colores.map((c) => {
+                  const hexFinal = normalizeHex(c.hex) || guessHexFromName(c.nombre);
+                  const isSelected = String(c.id) === String(colorId);
+
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`${styles.colorCard} ${isSelected ? styles.colorCardSelected : ""}`}
+                      onClick={() => setColorId(String(c.id))}
+                    >
+                      <div
+                        className={styles.colorSwatch}
+                        style={{ backgroundColor: hexFinal }}
+                        title={c.nombre}
+                      />
+                      <div className={styles.colorInfo}>
+                        <div className={styles.colorName}>{c.nombre}</div>
+                        <div className={styles.colorPrice}>
+                          {c.incremento_eur_ml > 0
+                            ? `+${c.incremento_eur_ml.toFixed(2)} €/ml`
+                            : "Sin incremento"}
+                        </div>
+                      </div>
+                      {isSelected && <span className={styles.colorCheckmark}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              {colorActual && incColor > 0 && (
+                <div className={styles.hint}>
+                  💡 Incremento por color: <strong>{incColor.toFixed(2)} €</strong>
+                </div>
+              )}
             </div>
 
             {/* Accesorios */}
@@ -647,6 +693,13 @@ export default function ConfigMosquitera({
                 <span className={styles.summaryValue}>{precioBase.toFixed(2)} €</span>
               </div>
               
+              {incColor > 0 && (
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Color:</span>
+                  <span className={styles.summaryValue}>+{incColor.toFixed(2)} €</span>
+                </div>
+              )}
+
               <div className={styles.summaryRow}>
                 <span className={styles.summaryLabel}>Accesorios:</span>
                 <span className={styles.summaryValue}>{accTotal.toFixed(2)} €</span>

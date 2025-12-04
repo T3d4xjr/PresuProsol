@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
 import styles from "../../styles/Admin.module.css";
 
-// 👉 Helpers Supabase para admin usuarios
+
 import {
   fetchAdminUsuarios,
   habilitarUsuarioDb,
@@ -15,7 +15,7 @@ import {
   cambiarDescuentoDb,
 } from "../api/admin-usuarios-api";
 
-// 👉 Helper de notificaciones por email
+
 import { enviarAvisoEstadoUsuario } from "../../lib/emailNotifications";
 
 export default function UsuariosAdmin() {
@@ -26,7 +26,7 @@ export default function UsuariosAdmin() {
   const [loadingData, setLoadingData] = useState(true);
   const [msg, setMsg] = useState("");
 
-  // 🔒 Solo admins
+  
   useEffect(() => {
     if (!loading) {
       if (!session) {
@@ -61,7 +61,7 @@ export default function UsuariosAdmin() {
     setLoadingData(false);
   }
 
-  // 🟢 HABILITAR
+  
   async function habilitarUsuario(u) {
     setMsg("");
 
@@ -69,7 +69,7 @@ export default function UsuariosAdmin() {
       const { error } = await habilitarUsuarioDb(u);
       if (error) throw error;
 
-      // 📧 Notificación por email (no bloquea la UI)
+      
       enviarAvisoEstadoUsuario({
         email: u.email,
         usuario: u.usuario,
@@ -84,14 +84,14 @@ export default function UsuariosAdmin() {
     }
   }
 
-  // 🔴 DESHABILITAR
+  
   async function deshabilitarUsuario(u) {
     setMsg("");
     try {
       const { error } = await deshabilitarUsuarioDb(u);
       if (error) throw error;
 
-      // 📧 Notificación por email
+      
       enviarAvisoEstadoUsuario({
         email: u.email,
         usuario: u.usuario,
@@ -163,9 +163,14 @@ export default function UsuariosAdmin() {
         <main className={styles.mainContent}>
           <div className={styles.header}>
             <h1 className={styles.title}>👥 Administración de Usuarios</h1>
-            <button className={styles.btnRefresh} onClick={fetchUsuarios}>
-              🔄 Actualizar
-            </button>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button className={styles.btnSecondary} onClick={() => router.push("/perfil")}>
+                ← Volver
+              </button>
+              <button className={styles.btnRefresh} onClick={fetchUsuarios}>
+                🔄 Actualizar
+              </button>
+            </div>
           </div>
 
           {msg && (

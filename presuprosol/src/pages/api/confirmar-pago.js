@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     const { presupuestoId, userId } = req.body;
 
-    console.log("✅ Confirmando pago:", { presupuestoId, userId });
+    
 
     // 1. Marcar presupuesto como pagado
     const { error: updateError } = await supabase

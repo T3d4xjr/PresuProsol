@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     let mounted = true;
 
     const loadProfile = async (userId) => {
-      console.log("[AuthContext] 🔍 Cargando perfil para:", userId);
+      
       try {
         const { data, error } = await supabase
           .from("usuarios")
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
           return null;
         }
 
-        console.log("[AuthContext] ✅ Perfil cargado");
+        
 
         if (mounted) {
           setProfile(data ?? null);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
 
         if (!mounted) return;
 
-        console.log("[AuthContext] 📋 Init session:", currentSession?.user?.id);
+        
         setSession(currentSession);
         sessionRef.current = currentSession; // Guardar en ref
 
@@ -92,40 +92,33 @@ export const AuthProvider = ({ children }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("[AuthContext] ========== AUTH EVENT ==========");
-      console.log("[AuthContext] Evento:", event);
-      console.log("[AuthContext] Sesión previa (ref):", sessionRef.current?.user?.id);
-      console.log("[AuthContext] Sesión nueva:", currentSession?.user?.id);
-      
       if (!mounted) {
-        console.log("[AuthContext] ⏭️ Componente desmontado, ignorando evento");
+        
         return;
       }
 
       // SIGNED_OUT: Limpiar todo
       if (event === 'SIGNED_OUT') {
-        console.log("[AuthContext] ✅ SIGNED_OUT - Limpiando estado");
+        
         setSession(null);
         sessionRef.current = null;
         setProfile(null);
         setLoading(false);
-        console.log("[AuthContext] ========== FIN AUTH EVENT ==========");
+        
         return;
       }
 
       // INITIAL_SESSION: Primera carga, ya se maneja en initSession
       if (event === 'INITIAL_SESSION') {
-        console.log("[AuthContext] ⏭️ INITIAL_SESSION ignorado (ya manejado en init)");
-        console.log("[AuthContext] ========== FIN AUTH EVENT ==========");
         return;
       }
 
       // TOKEN_REFRESHED: Solo actualizar token, no recargar perfil
       if (event === 'TOKEN_REFRESHED') {
-        console.log("[AuthContext] 🔄 TOKEN_REFRESHED - Actualizando sesión sin recargar perfil");
+        
         setSession(currentSession);
         sessionRef.current = currentSession;
-        console.log("[AuthContext] ========== FIN AUTH EVENT ==========");
+        
         return;
       }
 
@@ -136,37 +129,35 @@ export const AuthProvider = ({ children }) => {
         const newUserId = currentSession?.user?.id;
         
         if (prevUserId && prevUserId === newUserId) {
-          console.log("[AuthContext] ⏭️ SIGNED_IN IGNORADO - Misma sesión activa (cambio de pestaña)");
-          console.log("[AuthContext] ========== FIN AUTH EVENT ==========");
           return;
         }
         
         // Login nuevo: actualizar sesión y cargar perfil
-        console.log("[AuthContext] ✅ SIGNED_IN - Login nuevo, cargando perfil");
+        
         setSession(currentSession);
         sessionRef.current = currentSession;
         if (currentSession?.user?.id) {
           await loadProfile(currentSession?.user?.id);
         }
         setLoading(false);
-        console.log("[AuthContext] ========== FIN AUTH EVENT ==========");
+        
         return;
       }
 
       // Otros eventos: manejar por defecto
-      console.log("[AuthContext] ⚠️ Evento no manejado explícitamente:", event);
+      
       setSession(currentSession);
       sessionRef.current = currentSession;
 
       if (currentSession?.user?.id && !profile) {
-        console.log("[AuthContext] Cargando perfil por evento:", event);
+        
         await loadProfile(currentSession.user.id);
       } else if (!currentSession) {
         setProfile(null);
       }
       
       setLoading(false);
-      console.log("[AuthContext] ========== FIN AUTH EVENT ==========");
+      
     });
 
     return () => {

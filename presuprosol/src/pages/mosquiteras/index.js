@@ -52,7 +52,7 @@ export default function Mosquiteras() {
 
               <MosqTypeCard
                 title="Mosquitera Enrollable"
-                imgSrc="/assets/mosquiteras/mosquitera03.png"
+                imgSrc="/assets/mosquiteras/mosquitera3.png"
                 onClick={() => goConfig("enrollable")}
               />
             </div>

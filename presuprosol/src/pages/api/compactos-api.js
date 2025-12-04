@@ -24,12 +24,27 @@ export async function fetchCompactosCatalog() {
       .eq("activo", true)
       .order("nombre");
 
-    const error = mErr || aErr || accErr || null;
+    // Obtener combinaciones válidas (modelo + acabado con precio)
+    const { data: precios, error: pErr } = await supabase
+      .from("compactos_guias_precios")
+      .select("modelo_id, acabado_id, precio_ml")
+      .gt("precio_ml", 0);
+
+    const error = mErr || aErr || accErr || pErr || null;
+
+    // Crear array de combinaciones válidas
+    const combinaciones = (precios || []).map(p => ({
+      modeloId: p.modelo_id,
+      acabadoId: p.acabado_id
+    }));
+
+    
 
     return {
       modelos: modelos || [],
       acabados: acabados || [],
       accesorios: accesorios || [],
+      combinaciones: combinaciones,
       error,
     };
   } catch (e) {
@@ -38,6 +53,7 @@ export async function fetchCompactosCatalog() {
       modelos: [],
       acabados: [],
       accesorios: [],
+      combinaciones: [],
       error: e,
     };
   }
@@ -54,7 +70,7 @@ export async function fetchCompactosDescuento(userId) {
       .or(`auth_user_id.eq.${userId},id.eq.${userId}`)
       .maybeSingle();
 
-    console.log("[compactos descuento] status:", status, "data:", data, "error:", error);
+    
 
     if (error || !data) {
       return { descuento: 0, error: error || null };
@@ -109,7 +125,7 @@ export async function insertarPresupuestoCompacto(payload) {
       .select("id")
       .maybeSingle();
 
-    console.log("[insertarPresupuestoCompacto] status:", status, "data:", data, "error:", error);
+    
     return { data, error, status };
   } catch (e) {
     console.error("💥 [insertarPresupuestoCompacto] exception:", e);

@@ -62,7 +62,7 @@ export default function ConfigPuertaSeccional({
     [colores, colorId]
   );
 
-  /* ================== ACCESO ================== */
+  
   useEffect(() => {
     if (!loading && !session && !modoEdicion) {
       router.replace("/login?m=login-required");
@@ -75,13 +75,13 @@ export default function ConfigPuertaSeccional({
 
     const load = async () => {
       try {
-        console.log("🔄 Cargando catálogo puertas… tipo:", tipo, "modoEdicion:", modoEdicion);
+        
 
         const { medidas, colores, accesorios } =
           await fetchCatalogoPuertasSeccionales();
 
         if (!cancelled) {
-          console.log("✅ Catálogo puertas cargado:", { medidas: medidas.length, colores: colores.length, accesorios: accesorios.length });
+          
           setMedidas(medidas);
           setColores(colores);
           setAccesorios(accesorios);
@@ -103,21 +103,21 @@ export default function ConfigPuertaSeccional({
     };
   }, [tipo, modoEdicion]);
 
-  /* ================== DESCUENTO CLIENTE ================== */
+  
   useEffect(() => {
     let cancelled = false;
 
     const loadDesc = async () => {
       if (!session?.user?.id) {
-        console.log("⏸️ [DESCUENTO PUERTAS] No hay usuario");
+        
         return;
       }
 
       try {
-        console.log("💰 [CARGANDO DESCUENTO PUERTAS] uid:", session.user.id);
+        
         const pct = await fetchDescuentoClientePuertas(session.user.id);
         if (!cancelled) {
-          console.log("✅ Descuento puertas cargado:", pct, "%");
+          
           setDescuento(pct);
         }
       } catch (e) {
@@ -139,10 +139,7 @@ export default function ConfigPuertaSeccional({
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
 
-    console.log(
-      "📝 [MODO EDICIÓN PUERTA SECCIONAL] Cargando datos iniciales:",
-      datosIniciales
-    );
+    
 
     // Medida - buscar por alto y ancho
     if (
@@ -156,12 +153,7 @@ export default function ConfigPuertaSeccional({
           m.ancho_mm === Number(datosIniciales.ancho_mm)
       );
       if (medidaEncontrada) {
-        console.log(
-          "   → Medida encontrada:",
-          medidaEncontrada.ancho_mm,
-          "×",
-          medidaEncontrada.alto_mm
-        );
+        
         setMedidaId(String(medidaEncontrada.id));
       }
     }
@@ -172,17 +164,14 @@ export default function ConfigPuertaSeccional({
         (c) => c.nombre.toLowerCase() === datosIniciales.color.toLowerCase()
       );
       if (colorEncontrado) {
-        console.log("   → Color encontrado:", colorEncontrado.nombre);
+        
         setColorId(String(colorEncontrado.id));
       }
     }
 
     // Accesorios
     if (datosIniciales.accesorios && Array.isArray(datosIniciales.accesorios)) {
-      console.log(
-        "   → Accesorios:",
-        datosIniciales.accesorios.length
-      );
+      
       const accesoriosNormalizados = datosIniciales.accesorios.map((a) => ({
         id: a.id,
         nombre: a.nombre,
@@ -194,24 +183,24 @@ export default function ConfigPuertaSeccional({
 
     // Precio base
     if (datosIniciales.medida_precio) {
-      console.log("   → Precio base:", datosIniciales.medida_precio);
+      
       setPrecioBase(Number(datosIniciales.medida_precio));
     }
 
     // Incremento color
     if (datosIniciales.color_precio) {
-      console.log("   → Incremento color:", datosIniciales.color_precio);
+      
       setIncrementoColor(Number(datosIniciales.color_precio));
     }
 
     // Descuento
     if (datosIniciales.descuento_cliente && descuento === 0) {
-      console.log("   → Descuento inicial:", datosIniciales.descuento_cliente);
+      
       setDescuento(Number(datosIniciales.descuento_cliente));
     }
   }, [datosIniciales, modoEdicion, medidas, colores, descuento]);
 
-  /* ================== PRECIO BASE ================== */
+  
   useEffect(() => {
     const loadPrecio = async () => {
       setPrecioBase(null);
@@ -258,7 +247,7 @@ export default function ConfigPuertaSeccional({
     setTotal(+tot.toFixed(2));
   }, [precioBase, incrementoColor, accSel, descuento]);
 
-  /* ================== MANEJAR ACCESORIOS ================== */
+  
   const onSetAccUnidades = (acc, value) => {
     const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10)));
 
@@ -350,7 +339,7 @@ export default function ConfigPuertaSeccional({
     return null;
   }
 
-  /* ================== GUARDAR ================== */
+  
   async function guardar() {
     // MODO EDICIÓN: usar callback
     if (modoEdicion && onSubmit) {
@@ -376,10 +365,7 @@ export default function ConfigPuertaSeccional({
         total: total,
       };
 
-      console.log(
-        "💾 [MODO EDICIÓN PUERTA SECCIONAL] Enviando datos:",
-        datosPresupuesto
-      );
+      
       onSubmit(datosPresupuesto);
       return;
     }
@@ -431,7 +417,7 @@ export default function ConfigPuertaSeccional({
         pagado: false,
       };
 
-      console.log("💾 [GUARDANDO PUERTA]", payload);
+      
 
       await insertarPresupuestoPuertaSeccional(payload);
 
@@ -448,7 +434,7 @@ export default function ConfigPuertaSeccional({
     }
   }
 
-  /* ================== RENDER ================== */
+  
   return (
     <>
       <Head>

@@ -81,7 +81,7 @@ Por favor, responde directamente al email del cliente para una atención persona
         `.trim(),
       };
 
-      console.log("📧 [CONTACTO] Enviando email:", emailData);
+      
 
       // Llamar a la API route para enviar email
       const response = await fetch("/api/send-email", {

@@ -2,7 +2,7 @@
 import { supabase } from "../../lib/supabaseClient";
 
 export async function fetchFaqsActivas() {
-  console.log("📚 [API] Cargando FAQs");
+  
 
   const { data, error } = await supabase
     .from("faqs")
@@ -15,6 +15,6 @@ export async function fetchFaqsActivas() {
     throw error;
   }
 
-  console.log("✅ [API] FAQs cargadas:", data?.length);
+  
   return data || [];
 }

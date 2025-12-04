@@ -1,54 +1,86 @@
 // src/pages/api/puertasSeccionales.js
 import { supabase } from "../../lib/supabaseClient";
 
-// 📦 Cargar catálogo (medidas, colores, accesorios)
+
 export async function fetchCatalogoPuertasSeccionales() {
-  console.log("🔄 [API] Cargando catálogo puertas seccionales…");
+  
 
   // MEDIDAS
   let medidas = [];
   const { data: m, error: mErr } = await supabase
     .from("puertas_medidas")
-    .select("*");
+    .select("*")
+    .eq("activo", true);
 
   if (mErr) {
     console.error("[API puertas_medidas] error:", mErr);
   } else {
-    const sorted = (m || []).sort((a, b) => {
+    medidas = (m || []).sort((a, b) => {
       if (a.ancho_mm !== b.ancho_mm) return a.ancho_mm - b.ancho_mm;
       return a.alto_mm - b.alto_mm;
     });
-    medidas = sorted;
+    
   }
 
   // COLORES
   let colores = [];
   const { data: c, error: cErr } = await supabase
     .from("puertas_colores")
-    .select("*");
+    .select("*")
+    .eq("activo", true);
 
   if (cErr) {
     console.error("[API puertas_colores] error:", cErr);
   } else {
-    colores = (c || []).filter((x) => x.activo === true);
+    colores = c || [];
+    
   }
 
   // ACCESORIOS
   let accesorios = [];
   const { data: acc, error: accErr } = await supabase
     .from("puertas_accesorios")
-    .select("*");
+    .select("*")
+    .eq("activo", true);
 
   if (accErr) {
     console.error("[API puertas_accesorios] error:", accErr);
   } else {
-    accesorios = (acc || []).filter((x) => x.activo === true);
+    accesorios = acc || [];
+    
   }
 
   return { medidas, colores, accesorios };
 }
 
-// 💸 Descuento cliente para puertas (administracion_usuarios)
+
+export async function fetchCombinacionesPuertas() {
+  try {
+    const { data, error } = await supabase
+      .from("puertas_precios")
+      .select("ancho_mm, alto_mm, color_id, precio")
+      .gt("precio", 0);
+
+    if (error) {
+      console.error("[API combinaciones puertas] error:", error);
+      return [];
+    }
+
+    const combinaciones = (data || []).map(p => ({
+      ancho_mm: p.ancho_mm,
+      alto_mm: p.alto_mm,
+      color_id: p.color_id
+    }));
+
+    
+    return combinaciones;
+  } catch (e) {
+    console.error("[API combinaciones puertas] exception:", e);
+    return [];
+  }
+}
+
+
 export async function fetchDescuentoClientePuertas(userId) {
   if (!userId) return 0;
 
@@ -74,7 +106,7 @@ export async function fetchDescuentoClientePuertas(userId) {
   }
 }
 
-// 💰 Precio base + incremento color
+
 export async function fetchPrecioPuertaSeccional({
   ancho_mm,
   alto_mm,
@@ -119,7 +151,7 @@ export async function fetchPrecioPuertaSeccional({
   }
 }
 
-// 🧾 Insertar presupuesto de puerta seccional
+
 export async function insertarPresupuestoPuertaSeccional(payload) {
   const { error } = await supabase.from("presupuestos").insert([payload]);
 

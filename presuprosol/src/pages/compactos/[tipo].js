@@ -6,7 +6,7 @@ import Header from "../../components/Header";
 import { useAuth } from "../../context/AuthContext";
 import styles from "../../styles/ConfigPages.module.css";
 
-// 🔗 Helpers API (ya no usamos supabase directo aquí)
+
 import {
   fetchCompactosCatalog,
   fetchCompactosDescuento,
@@ -24,12 +24,12 @@ const ACCESORIO_IMAGENES = {
 
 // Función para obtener la imagen del accesorio
 const getAccesorioImagen = (nombreAccesorio) => {
-  console.log("🔍 [getAccesorioImagen] Buscando imagen para:", nombreAccesorio);
+  
 
   if (!nombreAccesorio) return null;
 
   const nombre = nombreAccesorio.toLowerCase();
-  console.log("   → nombre normalizado:", nombre);
+  
 
   if (nombre.includes("capsula") && nombre.includes("aluminio")) {
     console.log("   ✅ Match: capsulaAluminio.png");
@@ -75,6 +75,7 @@ export default function ConfigCompacto({
   const [modelos, setModelos] = useState([]);
   const [acabados, setAcabados] = useState([]);
   const [accesorios, setAccesorios] = useState([]);
+  const [combinaciones, setCombinaciones] = useState([]);
 
   // Selección
   const [modeloId, setModeloId] = useState("");
@@ -111,7 +112,7 @@ export default function ConfigCompacto({
     [acabados, acabadoId]
   );
 
-  /* ================== ACCESO ================== */
+  
   useEffect(() => {
     if (!loading && !session && !modoEdicion) {
       router.replace("/login?m=login-required");
@@ -124,9 +125,9 @@ export default function ConfigCompacto({
 
     const load = async () => {
       try {
-        console.log("📦 [CARGANDO CATÁLOGO] tipo:", tipo, "modoEdicion:", modoEdicion);
+        
 
-        const { modelos, acabados, accesorios, error } =
+        const { modelos, acabados, accesorios, combinaciones, error } =
           await fetchCompactosCatalog();
 
         if (error) {
@@ -134,16 +135,18 @@ export default function ConfigCompacto({
         }
 
         if (!cancelled) {
-          console.log("✅ [MODELOS CARGADOS]:", modelos.length);
+          
           console.table(modelos);
-          console.log("✅ [ACABADOS CARGADOS]:", acabados.length);
+          
           console.table(acabados);
-          console.log("✅ [ACCESORIOS CARGADOS]:", accesorios.length);
+          
           console.table(accesorios);
+          
 
           setModelos(modelos || []);
           setAcabados(acabados || []);
           setAccesorios(accesorios || []);
+          setCombinaciones(combinaciones || []);
         }
       } catch (e) {
         console.error("❌ [load catálogo] exception:", e);
@@ -156,7 +159,7 @@ export default function ConfigCompacto({
     };
 
     if (tipo || modoEdicion) {
-      console.log("🔄 Iniciando carga de catálogo...");
+      
       load();
     } else {
       console.log("⏸️ Esperando tipo o modo edición...");
@@ -167,18 +170,18 @@ export default function ConfigCompacto({
     };
   }, [tipo, modoEdicion]);
 
-  /* ================== DESCUENTO CLIENTE ================== */
+  
   useEffect(() => {
     let cancelled = false;
 
     const loadDesc = async () => {
       if (!session?.user?.id) {
-        console.log("⏸️ [DESCUENTO COMPACTOS] No hay usuario");
+        
         return;
       }
 
       const uid = session.user.id;
-      console.log("💰 [CARGANDO DESCUENTO COMPACTOS] uid:", uid);
+      
       const { descuento: pct, error } = await fetchCompactosDescuento(uid);
 
       if (error) {
@@ -186,7 +189,7 @@ export default function ConfigCompacto({
       }
 
       if (!cancelled) {
-        console.log("✅ [compactos descuento] aplicado =", pct, "%");
+        
         setDescuento(pct || 0);
       }
     };
@@ -206,12 +209,7 @@ export default function ConfigCompacto({
       setPrecioGuiaMl(null);
       if (!modeloId || !acabadoId) return;
 
-      console.log("🔍 [BUSCANDO PRECIO]", {
-        modeloId,
-        acabadoId,
-        nombreModelo: modeloSel?.nombre,
-        nombreAcabado: acabadoSel?.nombre,
-      });
+      
 
       const { precioMl, error } = await fetchPrecioGuiaMl(
         modeloId,
@@ -234,7 +232,7 @@ export default function ConfigCompacto({
       }
 
       if (!cancelled) {
-        console.log("✅ PRECIO ENCONTRADO:", precioMl, "€/ml");
+        
         setPrecioGuiaMl(Number(precioMl));
       }
     };
@@ -280,19 +278,10 @@ export default function ConfigCompacto({
     const tot = subtotal - desc;
     setTotal(+tot.toFixed(2));
 
-    console.log("[CÁLCULOS]", {
-      altoNum,
-      anchoNum,
-      precioGuiaMl,
-      pGuias,
-      acc,
-      subtotal,
-      desc,
-      tot,
-    });
+    
   }, [alto, ancho, precioGuiaMl, accSel, descuento]);
 
-  /* ================== HANDLERS ================== */
+  
   const onSetAccUnidades = (acc, value) => {
     const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10))); // Límite de 10 unidades
 
@@ -325,7 +314,7 @@ export default function ConfigCompacto({
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
 
-    console.log("📝 [MODO EDICIÓN COMPACTO] Cargando datos iniciales:", datosIniciales);
+    
 
     // Medidas
     if (datosIniciales.alto_mm) {
@@ -346,17 +335,17 @@ export default function ConfigCompacto({
     }
   }, [datosIniciales, modoEdicion, descuento]);
 
-  /* ================== ENCONTRAR MODELO Y ACABADO POR NOMBRE ================== */
+  
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
     if (modelos.length === 0 || acabados.length === 0) {
-      console.log("⏸️ [MODO EDICIÓN] Esperando catálogos...");
+      
       return;
     }
 
-    console.log("🔍 [MODO EDICIÓN] Buscando modelo y acabado...");
-    console.log("   Color guardado:", datosIniciales.color);
-    console.log("   Tipo presupuesto:", datosIniciales.tipo);
+    
+    
+    
 
     // Buscar acabado por nombre (guardado en color)
     if (datosIniciales.color && !acabadoId) {
@@ -365,22 +354,21 @@ export default function ConfigCompacto({
       );
 
       if (acabadoEncontrado) {
-        console.log("✅ Acabado encontrado:", acabadoEncontrado);
+        
         setAcabadoId(acabadoEncontrado.id);
       } else {
         console.warn("⚠️ No se encontró acabado:", datosIniciales.color);
-        console.log("   Acabados disponibles:", acabados.map((a) => a.nombre));
       }
     }
 
     // Si no hay un modelo específico guardado, seleccionar el primero disponible
     if (modelos.length > 0 && !modeloId) {
-      console.log("ℹ️ Seleccionando primer modelo disponible:", modelos[0].nombre);
+      
       setModeloId(modelos[0].id);
     }
   }, [datosIniciales, modoEdicion, modelos, acabados, modeloId, acabadoId]);
 
-  /* ================== GUARDAR ================== */
+  
   async function guardar() {
     // MODO EDICIÓN: usar callback
     if (modoEdicion && onSubmit) {
@@ -388,6 +376,8 @@ export default function ConfigCompacto({
         cliente: profile?.usuario || datosIniciales?.cliente || "",
         email: profile?.email || datosIniciales?.email || "",
         cif: profile?.cif || datosIniciales?.cif || null,
+        modelo: modeloSel?.nombre || null,
+        acabado: acabadoSel?.nombre || null,
         alto_mm: Number(alto),
         ancho_mm: Number(ancho),
         color: acabadoSel?.nombre || null,
@@ -403,7 +393,7 @@ export default function ConfigCompacto({
         total: Number(total),
       };
 
-      console.log("💾 [MODO EDICIÓN COMPACTO] Enviando datos:", datosPresupuesto);
+      
       onSubmit(datosPresupuesto);
       return;
     }
@@ -440,6 +430,8 @@ export default function ConfigCompacto({
         email: profile?.email || "",
         cif: profile?.cif || null,
         tipo: `compacto-${tipo}`,
+        modelo: modeloSel?.nombre || null,
+        acabado: acabadoSel?.nombre || null,
         alto_mm: Number(alto),
         ancho_mm: Number(ancho),
         medida_precio: Number(precioGuias),
@@ -457,7 +449,7 @@ export default function ConfigCompacto({
         pagado: false,
       };
 
-      console.log("[guardar compacto] payload:", payload);
+      
 
       const { error } = await insertarPresupuestoCompacto(payload);
 
@@ -480,7 +472,7 @@ export default function ConfigCompacto({
     }
   }
 
-  /* ================== RENDER ================== */
+  
   return (
     <>
       <Head>
@@ -513,10 +505,11 @@ export default function ConfigCompacto({
                   className={styles.select}
                   value={modeloId}
                   onChange={(e) => {
-                    console.log("🔄 Modelo seleccionado:", e.target.value);
+                    
                     const modelo = modelos.find((m) => m.id === e.target.value);
-                    console.log("   Datos del modelo:", modelo);
+                    
                     setModeloId(e.target.value);
+                    setAcabadoId(""); // Reset acabado al cambiar modelo
                   }}
                 >
                   <option value="">Selecciona modelo…</option>
@@ -537,13 +530,24 @@ export default function ConfigCompacto({
                   className={styles.select}
                   value={acabadoId}
                   onChange={(e) => setAcabadoId(e.target.value)}
+                  disabled={!modeloId}
                 >
-                  <option value="">Selecciona acabado…</option>
-                  {acabados.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.nombre}
-                    </option>
-                  ))}
+                  <option value="">
+                    {modeloId ? "Selecciona acabado…" : "Primero selecciona un modelo"}
+                  </option>
+                  {acabados
+                    .filter((a) => {
+                      // Solo mostrar acabados que tengan combinación válida con el modelo seleccionado
+                      if (!modeloId) return false;
+                      return combinaciones.some(
+                        (c) => c.modeloId === modeloId && c.acabadoId === a.id
+                      );
+                    })
+                    .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.nombre}
+                      </option>
+                    ))}
                 </select>
 
                 {!modeloId && !acabadoId && (

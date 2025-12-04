@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     const { presupuestoId, amount, userId } = req.body;
 
-    console.log("📝 Procesando pago:", { presupuestoId, amount, userId });
+    
 
     // 1. Verificar que el presupuesto existe
     const { data: presupuesto, error: presupuestoError } = await supabase
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Error creando pedido" });
     }
 
-    console.log("✅ Pedido creado:", pedido);
+    
 
     // 4. Retornar URL de éxito
     const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/pago-exitoso?presupuesto_id=${presupuestoId}`;

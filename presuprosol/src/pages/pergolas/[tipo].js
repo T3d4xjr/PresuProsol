@@ -55,14 +55,14 @@ export default function ConfigPergola({
     [colores, colorId]
   );
 
-  /* ================== ACCESO ================== */
+  
   useEffect(() => {
     if (!loading && !session && !modoEdicion) {
       router.replace("/login?m=login-required");
     }
   }, [loading, session, router, modoEdicion]);
 
-  /* ================== VALIDAR TIPO ================== */
+  
   useEffect(() => {
     if (tipo && tipo !== "bioclimatica" && !modoEdicion) {
       router.replace("/pergolas");
@@ -75,10 +75,10 @@ export default function ConfigPergola({
 
     const load = async () => {
       try {
-        console.log("🔄 [CARGANDO CATÁLOGO PÉRGOLAS DESDE API] tipo:", tipo, "modoEdicion:", modoEdicion);
+        
         const { medidas, colores, accesorios } = await fetchCatalogoPergolas();
         if (!cancelled) {
-          console.log("✅ Catálogo pérgolas cargado:", { medidas: medidas.length, colores: colores.length, accesorios: accesorios.length });
+          
           setMedidas(medidas);
           setColores(colores);
           setAccesorios(accesorios);
@@ -100,19 +100,19 @@ export default function ConfigPergola({
     };
   }, [tipo, modoEdicion]);
 
-  /* ================== DESCUENTO CLIENTE ================== */
+  
   useEffect(() => {
     let cancelled = false;
 
     const loadDesc = async () => {
       if (!session?.user?.id) {
-        console.log("⏸️ [DESCUENTO PÉRGOLAS] No hay usuario");
+        
         return;
       }
-      console.log("💰 [CARGANDO DESCUENTO PÉRGOLAS] uid:", session.user.id);
+      
       const pct = await fetchDescuentoClientePergolas(session.user.id);
       if (!cancelled) {
-        console.log("✅ Descuento pérgolas cargado:", pct, "%");
+        
         setDescuento(pct);
       }
     };
@@ -128,10 +128,7 @@ export default function ConfigPergola({
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
 
-    console.log(
-      "📝 [MODO EDICIÓN PÉRGOLA] Cargando datos iniciales:",
-      datosIniciales
-    );
+    
 
     if (
       datosIniciales.ancho_mm &&
@@ -144,12 +141,7 @@ export default function ConfigPergola({
           m.fondo_mm === Number(datosIniciales.alto_mm)
       );
       if (medidaEncontrada) {
-        console.log(
-          "   → Medida encontrada:",
-          medidaEncontrada.ancho_mm,
-          "×",
-          medidaEncontrada.fondo_mm
-        );
+        
         setMedidaId(String(medidaEncontrada.id));
       }
     }
@@ -159,7 +151,7 @@ export default function ConfigPergola({
         (c) => c.nombre.toLowerCase() === datosIniciales.color.toLowerCase()
       );
       if (colorEncontrado) {
-        console.log("   → Color encontrado:", colorEncontrado.nombre);
+        
         setColorId(String(colorEncontrado.id));
       }
     }
@@ -168,7 +160,7 @@ export default function ConfigPergola({
       datosIniciales.accesorios &&
       Array.isArray(datosIniciales.accesorios)
     ) {
-      console.log("   → Accesorios:", datosIniciales.accesorios.length);
+      
       const accesoriosNormalizados = datosIniciales.accesorios.map((a) => ({
         id: a.id,
         nombre: a.nombre,
@@ -179,22 +171,22 @@ export default function ConfigPergola({
     }
 
     if (datosIniciales.medida_precio) {
-      console.log("   → Precio base:", datosIniciales.medida_precio);
+      
       setPrecioBase(Number(datosIniciales.medida_precio));
     }
 
     if (datosIniciales.color_precio) {
-      console.log("   → Incremento color:", datosIniciales.color_precio);
+      
       setIncrementoColor(Number(datosIniciales.color_precio));
     }
 
     if (datosIniciales.descuento_cliente && descuento === 0) {
-      console.log("   → Descuento inicial:", datosIniciales.descuento_cliente);
+      
       setDescuento(Number(datosIniciales.descuento_cliente));
     }
   }, [datosIniciales, modoEdicion, medidas, colores, descuento]);
 
-  /* ================== PRECIO BASE ================== */
+  
   useEffect(() => {
     const loadPrecio = async () => {
       setPrecioBase(null);
@@ -241,7 +233,7 @@ export default function ConfigPergola({
     setTotal(+tot.toFixed(2));
   }, [precioBase, incrementoColor, accSel, descuento]);
 
-  /* ================== HANDLERS ================== */
+  
   const onSetAccUnidades = (acc, value) => {
     const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10)));
 
@@ -299,7 +291,7 @@ export default function ConfigPergola({
     return null;
   }
 
-  /* ================== GUARDAR ================== */
+  
   async function guardar() {
     // MODO EDICIÓN
     if (modoEdicion && onSubmit) {
@@ -325,7 +317,7 @@ export default function ConfigPergola({
         total: total,
       };
 
-      console.log("💾 [MODO EDICIÓN PÉRGOLA] Enviando datos:", datosPresupuesto);
+      
       onSubmit(datosPresupuesto);
       return;
     }
@@ -386,7 +378,7 @@ export default function ConfigPergola({
         pagado: false,
       };
 
-      console.log("💾 [GUARDANDO PÉRGOLA]", payload);
+      
 
       await insertarPresupuestoPergola(payload);
 
@@ -403,7 +395,7 @@ export default function ConfigPergola({
     }
   }
 
-  /* ================== RENDER ================== */
+  
   return (
     <>
       <Head>

@@ -15,14 +15,14 @@ export default function Perfil() {
   const [saving, setSaving] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("/assets/avatar.jpg");
 
-  // 🔒 Si no hay sesión -> redirigir a login
+  
   useEffect(() => {
     if (!loading && !session) {
       router.replace("/login?m=login-required");
     }
   }, [loading, session, router]);
 
-  // 🔄 Sincronizar avatar cuando cargue el perfil
+  
   useEffect(() => {
     if (profile?.foto_url) {
       setAvatarUrl(profile.foto_url);
@@ -31,13 +31,13 @@ export default function Perfil() {
     }
   }, [profile]);
 
-  // 🕑 Mientras carga, no renderiza nada
+  
   if (loading) return null;
 
-  // 🔐 Si NO hay sesión, no renderiza
+  
   if (!session) return null;
 
-  // 🚫 Perfil no cargado o error
+  
   if (session && profile === null) {
     return (
       <>
@@ -56,7 +56,7 @@ export default function Perfil() {
     );
   }
 
-  // 🚷 No habilitado por admin
+  
   if (session && profile && profile.habilitado === false) {
     return (
       <>
@@ -75,7 +75,7 @@ export default function Perfil() {
     );
   }
 
-  // 💾 Guardar cambios del perfil
+  
   async function onSave(e) {
     e.preventDefault();
     setMsg("");
@@ -95,7 +95,7 @@ export default function Perfil() {
     try {
       await actualizarPerfil(session.user.id, campos);
       setMsg("✅ Perfil actualizado.");
-      refreshProfile?.(); // 🔄 Refresca el perfil del hook
+      refreshProfile?.(); 
     } catch (error) {
       setMsg(`❌ No se pudo actualizar: ${error.message}`);
     } finally {
@@ -103,7 +103,7 @@ export default function Perfil() {
     }
   }
 
-  // 🧩 Render principal
+  
   return (
     <>
       <Head>
@@ -151,6 +151,16 @@ export default function Perfil() {
                 🚚 Pedidos
               </button>
             )}
+
+            {/* 📦 Administración de Productos - Solo admin */}
+            {profile?.rol === "admin" && (
+              <button
+                onClick={() => router.push("/admin/productos")}
+                className={`${styles.btn} ${styles.btnOutlineInfo}`}
+              >
+                🏷️ Productos
+              </button>
+            )}
           </div>
         </div>
 
@@ -161,7 +171,7 @@ export default function Perfil() {
             currentUrl={avatarUrl}
             onUploaded={(newUrl) => {
               setAvatarUrl(newUrl);
-              refreshProfile?.({ foto_url: newUrl }); // 🔥 Actualiza datos en memoria
+              refreshProfile?.({ foto_url: newUrl }); 
             }}
           />
 

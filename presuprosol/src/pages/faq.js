@@ -17,7 +17,7 @@ export default function FAQ() {
 
   const canAccess = !!session && !!profile && profile.habilitado !== false;
 
-  // 🔒 Redirección si no tiene acceso
+  
   useEffect(() => {
     if (loading) return;
 
@@ -26,7 +26,7 @@ export default function FAQ() {
     }
   }, [loading, canAccess, router]);
 
-  // 📚 Cargar FAQs solo cuando auth está OK
+  
   useEffect(() => {
     if (loading || !canAccess) return;
 
@@ -34,7 +34,7 @@ export default function FAQ() {
 
     const loadFAQs = async () => {
       try {
-        console.log("📚 [CARGANDO FAQs]");
+        
         setCargando(true);
 
         const data = await fetchFaqsActivas();
@@ -55,7 +55,7 @@ export default function FAQ() {
     };
 
     loadFAQs();
-    console.log("[FAQ] auth state:", { loading, session, profile, canAccess });
+    
 
     return () => {
       cancelled = true;

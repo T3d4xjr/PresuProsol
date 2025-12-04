@@ -1,64 +1,89 @@
 // src/pages/api/proteccionSolar.js
 import { supabase } from "../../lib/supabaseClient";
 
-// 📦 Cargar catálogo (modelos, colores, accesorios)
+
 export async function fetchCatalogoProteccionSolar() {
-  console.log("🔄 [API] Cargando catálogo protección solar…");
+  
 
   // MODELOS
   let modelos = [];
   const { data: m, error: mErr } = await supabase
     .from("proteccionsolar_modelos")
-    .select("*");
+    .select("*")
+    .eq("activo", true);
 
-  console.log("📊 [API MODELOS] Total registros:", m?.length || 0);
+  
 
   if (mErr) {
     console.error("[API proteccionsolar_modelos] error:", mErr);
   } else {
-    const activos = (m || []).filter((x) => x.activo === true);
-    console.log("✅ [API MODELOS] activos:", activos.length);
-    modelos = activos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    modelos = (m || []).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    
   }
 
   // COLORES / ESTRUCTURA
   let colores = [];
   const { data: c, error: cErr } = await supabase
     .from("proteccionsolar_colores_estructura")
-    .select("*");
+    .select("*")
+    .eq("activo", true);
 
   if (cErr) {
     console.error("[API proteccionsolar_colores_estructura] error:", cErr);
   } else {
-    const activos = (c || []).filter((x) => x.activo === true);
-    colores = activos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    colores = (c || []).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    
   }
 
   // ACCESORIOS
   let accesorios = [];
   const { data: acc, error: accErr } = await supabase
     .from("proteccionsolar_accesorios")
-    .select("*");
+    .select("*")
+    .eq("activo", true);
 
   if (accErr) {
     console.error("[API proteccionsolar_accesorios] error:", accErr);
   } else {
-    const activos = (acc || []).filter((x) => x.activo === true);
-    accesorios = activos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    accesorios = (acc || []).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    
   }
 
   return { modelos, colores, accesorios };
 }
 
-// 💸 Descuento cliente
+
+export async function fetchCombinacionesProteccionSolar() {
+  try {
+    const { data, error } = await supabase
+      .from("proteccionsolar_precios")
+      .select("modelo_id, color_id, precio_m2, precio")
+      .or("precio_m2.gt.0,precio.gt.0");
+
+    if (error) {
+      console.error("[API combinaciones proteccion-solar] error:", error);
+      return [];
+    }
+
+    const combinaciones = (data || []).map(p => ({
+      modelo_id: p.modelo_id,
+      color_id: p.color_id
+    }));
+
+    
+    return combinaciones;
+  } catch (e) {
+    console.error("[API combinaciones proteccion-solar] exception:", e);
+    return [];
+  }
+}
+
+
 export async function fetchDescuentoClienteProteccionSolar(userId) {
   if (!userId) return 0;
 
   try {
-    console.log(
-      "[API proteccion-solar descuento] buscando para auth_user_id:",
-      userId
-    );
+    
 
     const { data, error, status } = await supabase
       .from("administracion_usuarios")
@@ -66,14 +91,7 @@ export async function fetchDescuentoClienteProteccionSolar(userId) {
       .or(`auth_user_id.eq.${userId},id.eq.${userId}`)
       .maybeSingle();
 
-    console.log(
-      "[API proteccion-solar descuento] status:",
-      status,
-      "data:",
-      data,
-      "error:",
-      error
-    );
+    
 
     if (error) {
       console.warn("[API proteccion-solar descuento] error:", error);
@@ -86,11 +104,7 @@ export async function fetchDescuentoClienteProteccionSolar(userId) {
     }
 
     const pct = Number(data?.descuento ?? data?.descuento_cliente ?? 0);
-    console.log("[API proteccion-solar descuento] aplicado =", pct, "%", {
-      descuento: data?.descuento,
-      descuento_cliente: data?.descuento_cliente,
-      calculado: pct,
-    });
+    
 
     return Number.isFinite(pct) ? pct : 0;
   } catch (e) {
@@ -99,7 +113,7 @@ export async function fetchDescuentoClienteProteccionSolar(userId) {
   }
 }
 
-// 💰 Precio base + incremento color
+
 export async function fetchPrecioProteccionSolar({ modeloId, colorId }) {
   if (!modeloId || !colorId) {
     return { precio: null, incrementoColor: 0 };
@@ -128,7 +142,7 @@ export async function fetchPrecioProteccionSolar({ modeloId, colorId }) {
     }
 
     const precioValue = data.precio_m2 ?? data.precio ?? 0;
-    console.log("✅ [API precio proteccion-solar] encontrado:", precioValue, "€");
+    
 
     const precio = Number(precioValue || 0);
     let incrementoColor = 0;
@@ -145,7 +159,7 @@ export async function fetchPrecioProteccionSolar({ modeloId, colorId }) {
   }
 }
 
-// 🧾 Insertar presupuesto
+
 export async function insertarPresupuestoProteccionSolar(payload) {
   const { error } = await supabase.from("presupuestos").insert([payload]);
 

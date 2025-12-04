@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   try {
     const { amount, presupuestoId, userId } = req.body;
 
-    console.log("💳 Creando PaymentIntent:", { amount, presupuestoId, userId });
+    
 
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({ error: "Stripe no está configurado" });
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log("✅ PaymentIntent creado:", paymentIntent.id);
+    
 
     res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {

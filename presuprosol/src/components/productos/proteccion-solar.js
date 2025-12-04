@@ -11,11 +11,7 @@ export default function ProteccionSolarForm({
   guardando = false,
   modoEdicion = false,
 }) {
-  console.log("📦 [ProteccionSolarForm] Props:", {
-    modoEdicion,
-    tieneDatos: !!datosIniciales,
-    guardando,
-  });
+  
 
   // Detectar tipo desde datosIniciales.tipo
   // Tipos: "proteccion-solar-ventuszip01", "proteccion-solar-Stor-disaluz", "proteccion-solar-Stor-vilaluz"

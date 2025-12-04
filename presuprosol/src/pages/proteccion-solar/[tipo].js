@@ -58,7 +58,7 @@ export default function ConfigProteccionSolar({
     [colores, colorId]
   );
 
-  /* ================== ACCESO ================== */
+  
   useEffect(() => {
     if (!loading && !session && !modoEdicion) {
       router.replace("/login?m=login-required");
@@ -71,13 +71,13 @@ export default function ConfigProteccionSolar({
 
     const load = async () => {
       try {
-        console.log("🔄 Cargando catálogo protección solar, tipo:", tipo, "modoEdicion:", modoEdicion);
+        
 
         const { modelos, colores, accesorios } =
           await fetchCatalogoProteccionSolar();
 
         if (!cancelled) {
-          console.log("✅ Catálogo protección solar cargado:", { modelos: modelos.length, colores: colores.length, accesorios: accesorios.length });
+          
           setModelos(modelos);
           setColores(colores);
           setAccesorios(accesorios);
@@ -99,21 +99,21 @@ export default function ConfigProteccionSolar({
     };
   }, [tipo, modoEdicion]);
 
-  /* ================== DESCUENTO CLIENTE ================== */
+  
   useEffect(() => {
     let cancelled = false;
 
     const loadDesc = async () => {
       if (!session?.user?.id) {
-        console.log("⏸️ [DESCUENTO PROTECCIÓN SOLAR] No hay usuario");
+        
         return;
       }
-      console.log("💰 [CARGANDO DESCUENTO PROTECCIÓN SOLAR] uid:", session.user.id);
+      
       const pct = await fetchDescuentoClienteProteccionSolar(
         session.user.id
       );
       if (!cancelled) {
-        console.log("✅ Descuento protección solar cargado:", pct, "%");
+        
         setDescuento(pct);
       }
     };
@@ -129,10 +129,7 @@ export default function ConfigProteccionSolar({
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
 
-    console.log(
-      "📝 [MODO EDICIÓN PROTECCIÓN SOLAR] Cargando datos iniciales:",
-      datosIniciales
-    );
+    
 
     // Modelo
     if (datosIniciales.tipo && modelos.length > 0) {
@@ -145,12 +142,10 @@ export default function ConfigProteccionSolar({
       );
 
       if (modeloEncontrado) {
-        console.log("   → Modelo encontrado:", modeloEncontrado.nombre);
+        
         setModeloId(String(modeloEncontrado.id));
       } else {
-        console.log(
-          "   → Modelo no encontrado, seleccionando primero disponible"
-        );
+        
         setModeloId(String(modelos[0].id));
       }
     }
@@ -161,14 +156,14 @@ export default function ConfigProteccionSolar({
         (c) => c.nombre.toLowerCase() === datosIniciales.color.toLowerCase()
       );
       if (colorEncontrado) {
-        console.log("   → Color encontrado:", colorEncontrado.nombre);
+        
         setColorId(String(colorEncontrado.id));
       }
     }
 
     // Accesorios
     if (datosIniciales.accesorios && Array.isArray(datosIniciales.accesorios)) {
-      console.log("   → Accesorios:", datosIniciales.accesorios.length);
+      
       const accesoriosNormalizados = datosIniciales.accesorios.map((a) => ({
         id: a.id,
         nombre: a.nombre,
@@ -180,24 +175,24 @@ export default function ConfigProteccionSolar({
 
     // Precio base
     if (datosIniciales.medida_precio) {
-      console.log("   → Precio base:", datosIniciales.medida_precio);
+      
       setPrecioBase(Number(datosIniciales.medida_precio));
     }
 
     // Incremento color
     if (datosIniciales.color_precio) {
-      console.log("   → Incremento color:", datosIniciales.color_precio);
+      
       setIncrementoColor(Number(datosIniciales.color_precio));
     }
 
     // Descuento
     if (datosIniciales.descuento_cliente && descuento === 0) {
-      console.log("   → Descuento inicial:", datosIniciales.descuento_cliente);
+      
       setDescuento(Number(datosIniciales.descuento_cliente));
     }
   }, [datosIniciales, modoEdicion, modelos, colores, descuento]);
 
-  /* ================== PRECIO BASE ================== */
+  
   useEffect(() => {
     const loadPrecio = async () => {
       setPrecioBase(null);
@@ -243,7 +238,7 @@ export default function ConfigProteccionSolar({
     setTotal(+tot.toFixed(2));
   }, [precioBase, incrementoColor, accSel, descuento]);
 
-  /* ================== MANEJAR ACCESORIOS ================== */
+  
   const onSetAccUnidades = (acc, value) => {
     const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10))); // Límite de 10 unidades
 
@@ -301,7 +296,7 @@ export default function ConfigProteccionSolar({
     return null;
   }
 
-  /* ================== GUARDAR ================== */
+  
   async function guardar() {
     // MODO EDICIÓN: usar callback
     if (modoEdicion && onSubmit) {
@@ -311,6 +306,7 @@ export default function ConfigProteccionSolar({
         cliente: profile?.usuario || datosIniciales?.cliente || "",
         email: profile?.email || datosIniciales?.email || "",
         cif: profile?.cif || datosIniciales?.cif || null,
+        modelo: modeloSel?.nombre || null,
         medida_precio: precioBase || 0,
         color: colorSel?.nombre || null,
         color_precio: incrementoColor,
@@ -325,10 +321,7 @@ export default function ConfigProteccionSolar({
         total: total,
       };
 
-      console.log(
-        "💾 [MODO EDICIÓN PROTECCIÓN SOLAR] Enviando datos:",
-        datosPresupuesto
-      );
+      
       onSubmit(datosPresupuesto);
       return;
     }
@@ -356,6 +349,7 @@ export default function ConfigProteccionSolar({
         email: profile?.email || "",
         cif: profile?.cif || null,
         tipo: `proteccion-solar-${tipo}`,
+        modelo: modeloSel?.nombre || null,
         alto_mm: 0,
         ancho_mm: 0,
         medida_precio: precioBase || 0,
@@ -373,7 +367,7 @@ export default function ConfigProteccionSolar({
         pagado: false,
       };
 
-      console.log("[guardar protección solar] payload:", payload);
+      
 
       await insertarPresupuestoProteccionSolar(payload);
 
@@ -390,7 +384,7 @@ export default function ConfigProteccionSolar({
     }
   }
 
-  /* ================== RENDER ================== */
+  
   return (
     <>
       <Head>

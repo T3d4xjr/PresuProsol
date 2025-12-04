@@ -117,7 +117,7 @@ export default function ConfigPanos({
   const [ordenPrecio, setOrdenPrecio] = useState("asc"); // 'asc' o 'desc'
   const [rangoPrecio, setRangoPrecio] = useState("todos"); // 'todos', '0-10', '10-20', '20-50', '50+'
 
-  /* ================== ACCESO ================== */
+  
   useEffect(() => {
     if (!loading && !session && !modoEdicion) {
       router.replace("/login?m=login-required");
@@ -129,11 +129,11 @@ export default function ConfigPanos({
     let cancelled = false;
 
     const load = async () => {
-      console.log("📦 [CARGANDO CATÁLOGO PAÑOS DESDE API] tipo:", tipo, "modoEdicion:", modoEdicion);
+      
       try {
         const { modelos, acabados, accesorios } = await fetchCatalogoPanos();
         if (!cancelled) {
-          console.log("✅ Paños cargados:", { modelos: modelos.length, acabados: acabados.length, accesorios: accesorios.length });
+          
           setModelos(modelos);
           setAcabados(acabados);
           setAccesorios(accesorios);
@@ -157,19 +157,19 @@ export default function ConfigPanos({
     };
   }, [tipo, modoEdicion]);
 
-  /* ================== DESCUENTO CLIENTE ================== */
+  
   useEffect(() => {
     let cancelled = false;
 
     const loadDesc = async () => {
       if (!session?.user?.id) {
-        console.log("⏸️ [DESCUENTO PAÑOS] No hay usuario");
+        
         return;
       }
-      console.log("💰 [CARGANDO DESCUENTO PAÑOS] uid:", session.user.id);
+      
       const pct = await fetchDescuentoClientePanos(session.user.id);
       if (!cancelled) {
-        console.log("✅ Descuento paños cargado:", pct, "%");
+        
         setDescuento(pct);
       }
     };
@@ -185,7 +185,7 @@ export default function ConfigPanos({
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
 
-    console.log("📝 [MODO EDICIÓN PAÑOS] Cargando datos iniciales:", datosIniciales);
+    
 
     if (datosIniciales.alto_mm) {
       setAlto(datosIniciales.alto_mm.toString());
@@ -213,7 +213,7 @@ export default function ConfigPanos({
     }
   }, [datosIniciales, modoEdicion, descuento]);
 
-  /* ================== ENCONTRAR MODELO Y ACABADO POR NOMBRE ================== */
+  
   useEffect(() => {
     if (!datosIniciales || !modoEdicion) return;
     if (modelos.length === 0 || acabados.length === 0) return;
@@ -265,7 +265,7 @@ export default function ConfigPanos({
     setTotal(+tot.toFixed(2));
   }, [alto, ancho, precioM2, accSel, descuento]);
 
-  /* ================== HANDLERS ================== */
+  
   const onSetAccUnidades = (acc, value) => {
     const uds = Math.max(0, Math.min(10, parseInt(value || "0", 10))); // Límite de 10 unidades
 
@@ -305,7 +305,7 @@ export default function ConfigPanos({
     [acabados, acabadoId]
   );
 
-  /* ================== GUARDAR ================== */
+  
   async function guardar() {
     // MODO EDICIÓN: usar callback
     if (modoEdicion && onSubmit) {
@@ -313,6 +313,8 @@ export default function ConfigPanos({
         cliente: profile?.usuario || datosIniciales?.cliente || "",
         email: profile?.email || datosIniciales?.email || "",
         cif: profile?.cif || datosIniciales?.cif || null,
+        modelo: modeloSel?.nombre || null,
+        acabado: acabadoSel?.nombre || null,
         alto_mm: Number(alto),
         ancho_mm: Number(ancho),
         color: acabadoSel?.nombre || null,
@@ -328,7 +330,7 @@ export default function ConfigPanos({
         total: Number(total),
       };
 
-      console.log("💾 [MODO EDICIÓN PAÑOS] Enviando datos:", datosPresupuesto);
+      
       onSubmit(datosPresupuesto);
       return;
     }
@@ -354,6 +356,7 @@ export default function ConfigPanos({
       }
 
       const subtotalCalc = Number(base) + Number(accTotal);
+      const modeloNombre = modeloSel?.nombre || null;
       const acabadoNombre = acabadoSel?.nombre || null;
 
       const payload = {
@@ -362,6 +365,8 @@ export default function ConfigPanos({
         email: profile?.email || "",
         cif: profile?.cif || null,
         tipo: `paño-${tipo || "completo"}`,
+        modelo: modeloNombre,
+        acabado: acabadoNombre,
         alto_mm: Number(alto),
         ancho_mm: Number(ancho),
         medida_precio: Number(base),
@@ -379,13 +384,10 @@ export default function ConfigPanos({
         pagado: false,
       };
 
-      console.log("[payload json] >>>");
-      console.log(JSON.stringify(payload, null, 2));
-
       const { data, error, status } = await insertarPresupuestoPanos(payload);
 
-      console.log("[insert presupuestos] status:", status);
-      console.log("[insert presupuestos] data:", data);
+      
+      
 
       if (error) {
         setMsg(`❌ No se pudo guardar el presupuesto: ${error.message || "error desconocido"}`);
@@ -402,7 +404,7 @@ export default function ConfigPanos({
     }
   }
 
-  /* ================== RENDER ================== */
+  
   return (
     <>
       <Head>

@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   const { to, from, subject, text } = req.body;
 
-  console.log("📧 [API] Recibiendo solicitud de email:", { to, from, subject });
+  
 
   try {
     // Verificar variables de entorno
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log("📤 [API] Enviando email...");
+    
 
     // Enviar email
     const info = await transporter.sendMail({
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       replyTo: from,
     });
 
-    console.log("✅ [API] Email enviado:", info.messageId);
+    
 
     return res.status(200).json({ success: true, messageId: info.messageId });
   } catch (error) {

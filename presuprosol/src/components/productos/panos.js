@@ -11,11 +11,7 @@ export default function PanosForm({
   guardando = false,
   modoEdicion = false,
 }) {
-  console.log("📦 [PanosForm] Props:", {
-    modoEdicion,
-    tieneDatos: !!datosIniciales,
-    guardando,
-  });
+  
 
   // Detectar tipo desde datosIniciales.tipo
   // Tipos: "paño-completo", "paño-lamas", "paño-pano"

@@ -2,7 +2,7 @@
 import { supabase } from "../../lib/supabaseClient";
 
 export async function fetchTerminosActivos() {
-  console.log("📄 [API] Cargando términos");
+  
 
   const { data, error } = await supabase
     .from("terminos_condiciones")

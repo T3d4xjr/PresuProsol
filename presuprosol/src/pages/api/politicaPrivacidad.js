@@ -2,7 +2,7 @@
 import { supabase } from "../../lib/supabaseClient";
 
 export async function fetchPoliticaPrivacidadActiva() {
-  console.log("🔐 [API] Cargando política de privacidad");
+  
 
   const { data, error } = await supabase
     .from("politica_privacidad")
@@ -15,6 +15,6 @@ export async function fetchPoliticaPrivacidadActiva() {
     throw error;
   }
 
-  console.log("✅ [API] Política cargada:", data?.length);
+  
   return data || [];
 }

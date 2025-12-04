@@ -29,7 +29,7 @@ export default function PoliticaPrivacidad() {
   useEffect(() => {
     const loadPolitica = async () => {
       try {
-        console.log("🔐 [CARGANDO POLÍTICA DE PRIVACIDAD]");
+        
         setCargando(true);
 
         const data = await fetchPoliticaPrivacidadActiva();

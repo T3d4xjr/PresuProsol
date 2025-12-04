@@ -13,11 +13,7 @@ export default function CompactosForm({
   guardando = false,
   modoEdicion = false,
 }) {
-  console.log("📦 [CompactosForm] Props:", {
-    modoEdicion,
-    tieneDatos: !!datosIniciales,
-    guardando,
-  });
+  
 
   // Detectar tipo desde datosIniciales.tipo
   const tipo =
@@ -33,7 +29,7 @@ export default function CompactosForm({
       onSubmit={onSubmit}
       guardando={guardando}
       modoEdicion={modoEdicion}
-      tipoOverride={tipo} // 👈 se usará dentro de [tipo].js
+      tipoOverride={tipo} 
     />
   );
 }

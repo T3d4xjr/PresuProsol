@@ -1,9 +1,9 @@
 // src/pages/api/panos.js
 import { supabase } from "../../lib/supabaseClient";
 
-// 📦 Catálogo panos: modelos, acabados, accesorios
+
 export async function fetchCatalogoPanos() {
-  console.log("📦 [API PANOS] Cargando catálogo…");
+  
 
   // MODELOS
   let modelos = [];
@@ -17,7 +17,7 @@ export async function fetchCatalogoPanos() {
   if (mErr) {
     console.error("[API panos_modelos] error:", mErr);
   } else {
-    console.log("✅ [API PANOS] modelos cargados:", m?.length || 0);
+    
     modelos = m || [];
   }
 
@@ -32,7 +32,7 @@ export async function fetchCatalogoPanos() {
   if (aErr) {
     console.error("[API panos_acabados] error:", aErr);
   } else {
-    console.log("✅ [API PANOS] acabados cargados:", a?.length || 0);
+    
     acabados = a || [];
   }
 
@@ -47,19 +47,19 @@ export async function fetchCatalogoPanos() {
   if (accErr) {
     console.error("[API panos_accesorios] error:", accErr);
   } else {
-    console.log("✅ [API PANOS] accesorios cargados:", acc?.length || 0);
+    
     accesorios = acc || [];
   }
 
   return { modelos, acabados, accesorios };
 }
 
-// 💸 Descuento cliente
+
 export async function fetchDescuentoClientePanos(userId) {
   if (!userId) return 0;
 
   try {
-    console.log("[API panos descuento] buscando para auth_user_id:", userId);
+    
 
     const { data, error, status } = await supabase
       .from("administracion_usuarios")
@@ -67,7 +67,7 @@ export async function fetchDescuentoClientePanos(userId) {
       .or(`auth_user_id.eq.${userId},id.eq.${userId}`)
       .maybeSingle();
 
-    console.log("[API panos descuento] status:", status, "data:", data);
+    
 
     if (error) {
       console.warn("[API panos descuento] error:", error);
@@ -75,7 +75,7 @@ export async function fetchDescuentoClientePanos(userId) {
     }
 
     const pct = Number(data?.descuento ?? data?.descuento_cliente ?? 0);
-    console.log("[API panos descuento] aplicado =", pct, "%");
+    
     return Number.isFinite(pct) ? pct : 0;
   } catch (e) {
     console.error("[API panos descuento] exception:", e);
@@ -83,7 +83,7 @@ export async function fetchDescuentoClientePanos(userId) {
   }
 }
 
-// 🧾 Insertar presupuesto panos
+
 export async function insertarPresupuestoPanos(payload) {
   const { data, error, status } = await supabase
     .from("presupuestos")
@@ -91,7 +91,7 @@ export async function insertarPresupuestoPanos(payload) {
     .select("id")
     .maybeSingle();
 
-  console.log("[API insertar presupuesto panos] status:", status, "data:", data);
+  
 
   if (error) {
     console.error("[API insertar presupuesto panos] error:", error);

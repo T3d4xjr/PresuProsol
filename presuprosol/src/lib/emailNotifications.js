@@ -36,7 +36,7 @@ export async function enviarAvisoEstadoUsuario({ email, usuario, estado }) {
       publicKey
     );
 
-    console.log("📧 EMAIL → estado USUARIO enviado a:", email);
+    
   } catch (err) {
     console.error("❌ Error email usuario:", err);
   }
@@ -72,7 +72,7 @@ export async function enviarAvisoPedidoEnviado({ email, nombre }) {
       publicKey
     );
 
-    console.log("📧 EMAIL → pedido ENVIANDO enviado a:", email);
+    
   } catch (err) {
     console.error("❌ Error email pedido ENVIANDO:", err);
   }
@@ -109,7 +109,7 @@ export async function enviarAvisoPedidoEntregado({ email, usuario }) {
       publicKey
     );
 
-    console.log("📧 EMAIL → pedido ENTREGADO enviado a:", email);
+    
   } catch (err) {
     console.error("❌ Error email pedido ENTREGADO:", err);
   }

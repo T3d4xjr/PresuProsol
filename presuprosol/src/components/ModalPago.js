@@ -98,7 +98,7 @@ function FormularioTarjeta({ presupuesto, userId, onSuccess, procesando, setProc
     setError(null);
 
     try {
-      console.log("🔄 Iniciando pago con Stripe...");
+      
 
       // 1. Crear PaymentIntent en el backend
       const response = await fetch("/api/create-payment-intent", {
@@ -180,7 +180,7 @@ function FormularioTarjeta({ presupuesto, userId, onSuccess, procesando, setProc
       }
 
       if (paymentIntent.status === "succeeded") {
-        console.log("✅ Pago exitoso, creando pedido...");
+        
 
         // 3. Confirmar pago y crear pedido
         const confirmResponse = await fetch("/api/confirmar-pago", {

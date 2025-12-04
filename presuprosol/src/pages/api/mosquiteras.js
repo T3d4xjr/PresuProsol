@@ -25,7 +25,7 @@ function normalizeHex(v) {
 /* ========= Pricing base ========= */
 
 export async function getMosqBasePrice(alto, ancho) {
-  console.log("[getMosqBasePrice] buscar precio para:", { alto, ancho });
+  
 
   const { data, error, status } = await supabase
     .from("mosq_medidas")
@@ -34,7 +34,7 @@ export async function getMosqBasePrice(alto, ancho) {
     .eq("ancho_mm", ancho)
     .maybeSingle();
 
-  console.log("[getMosqBasePrice] status:", status, "data:", data, "error:", error);
+  
   if (error) return null;
   return data?.precio ?? null;
 }
@@ -44,35 +44,50 @@ export async function getMosqBasePrice(alto, ancho) {
 export async function fetchMosqMedidas() {
   const { data, error, status } = await supabase
     .from("mosq_medidas")
-    .select("alto_mm, ancho_mm");
+    .select("*");
 
-  console.log("[fetchMosqMedidas] status:", status, "error:", error, "rows:", data?.length);
+  
 
   if (error || !data) {
-    return { altos: [], anchos: [] };
+    console.error("[fetchMosqMedidas] ERROR:", error);
+    return { altos: [], anchos: [], combinaciones: [] };
   }
 
-  const uniqueAltos = [...new Set(data.map((d) => d.alto_mm))].sort((a, b) => a - b);
-  const uniqueAnchos = [...new Set(data.map((d) => d.ancho_mm))].sort((a, b) => a - b);
+  // Filtrar solo las que tienen precio mayor a 0
+  const conPrecio = data.filter(d => {
+    const precio = d.precio_base || d.precio || 0;
+    return precio > 0;
+  });
 
-  console.log("[fetchMosqMedidas] altos:", uniqueAltos, "anchos:", uniqueAnchos);
+  
 
-  return { altos: uniqueAltos, anchos: uniqueAnchos };
+  const uniqueAltos = [...new Set(conPrecio.map((d) => d.alto_mm))].sort((a, b) => a - b);
+  const uniqueAnchos = [...new Set(conPrecio.map((d) => d.ancho_mm))].sort((a, b) => a - b);
+  
+  // Devolver también las combinaciones válidas
+  const combinaciones = conPrecio.map(d => ({
+    alto: d.alto_mm,
+    ancho: d.ancho_mm
+  }));
+
+  
+
+  return { altos: uniqueAltos, anchos: uniqueAnchos, combinaciones };
 }
 
 /* ========= Colores + accesorios ========= */
 
 export async function fetchMosqOptions() {
   try {
-    console.log("📦 [API MOSQ] cargando colores y accesorios…");
+    
 
     // Colores
     const { data: col, error: colErr, status: colStatus } = await supabase
       .from("mosq_colores")
-      .select("id, color, precio, precio_ml, incremento_ml, activo, hex");
+      .select("id, color, precio, activo, hex");
 
-    console.log("[API mosq_colores] status:", colStatus, "count:", col?.length, "error:", colErr);
-    console.log("[API mosq_colores] RAW DATA:", col);
+    
+    
 
     const colores = (col || [])
       .filter((c) => c.activo === true)
@@ -81,27 +96,17 @@ export async function fetchMosqOptions() {
         return {
           id: String(c.id),
           nombre: c.color,
-          incremento_eur_ml: Number(c.precio_ml ?? c.incremento_ml ?? c.precio ?? 0),
+          incremento_eur_ml: Number(c.precio ?? 0),
           hex: hexNorm,
         };
       });
-
-    console.log("✅ [API MOSQ] colores procesados:", colores.length);
-    console.table(colores);
 
     // Accesorios
     const { data: acc, error: accErr, status: accStatus } = await supabase
       .from("mosq_accesorios")
       .select("*");
 
-    console.log(
-      "[API mosq_accesorios] status:",
-      accStatus,
-      "count:",
-      acc?.length,
-      "error:",
-      accErr
-    );
+    
 
     const accesorios = (acc || [])
       .filter((a) => a.activo === true)
@@ -110,11 +115,8 @@ export async function fetchMosqOptions() {
         nombre: a.nombre,
         unidad: a.unidad || "ud",
         perimetral: Boolean(a.perimetral),
-        precio_unit: Number(a.precio_unit ?? a.precio ?? a.precio_ud ?? 0),
+        precio_unit: Number(a.precio ?? a.precio_unit ?? a.precio_ud ?? 0),
       }));
-
-    console.log("✅ [API MOSQ] accesorios cargados:", accesorios.length);
-    console.table(accesorios);
 
     return { colores, accesorios };
   } catch (e) {
@@ -129,7 +131,7 @@ export async function fetchMosqDescuentoCliente(userId) {
   if (!userId) return 0;
 
   try {
-    console.log("[API mosq descuento] buscando para auth_user_id:", userId);
+    
 
     const { data, error, status } = await supabase
       .from("administracion_usuarios")
@@ -137,7 +139,7 @@ export async function fetchMosqDescuentoCliente(userId) {
       .or(`auth_user_id.eq.${userId},id.eq.${userId}`)
       .maybeSingle();
 
-    console.log("[API mosq descuento] status:", status, "data:", data, "error:", error);
+    
 
     if (error || !data) {
       console.warn("[API mosq descuento] error o sin usuario:", error);
@@ -145,7 +147,7 @@ export async function fetchMosqDescuentoCliente(userId) {
     }
 
     const pct = Number(data?.descuento ?? data?.descuento_cliente ?? 0);
-    console.log("[API mosq descuento] aplicado =", pct, "%");
+    
     return Number.isFinite(pct) ? pct : 0;
   } catch (e) {
     console.error("[API mosq descuento] exception:", e);
@@ -162,7 +164,7 @@ export async function insertarPresupuestoMosq(payload) {
     .select("id")
     .maybeSingle();
 
-  console.log("[API insertar presupuesto MOSQ] status:", status, "data:", data);
+  
 
   if (error) {
     console.error("[API insertar presupuesto MOSQ] error:", error);

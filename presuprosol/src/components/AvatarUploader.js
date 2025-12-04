@@ -14,7 +14,7 @@ export default function AvatarUploader({ userId, currentUrl, onUploaded }) {
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // 👇 sincroniza el preview con lo que venga del padre (perfil.foto_url)
+  
   useEffect(() => {
     if (currentUrl) {
       setPreview(currentUrl);

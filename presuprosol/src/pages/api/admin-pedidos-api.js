@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabaseClient";
 /** 📥 Cargar pedidos + datos de usuario y presupuesto */
 export async function fetchAdminPedidos() {
   try {
-    console.log("🔍 [fetchAdminPedidos] Cargando pedidos...");
+    
 
     const { data: pedidosData, error: pedidosError } = await supabase
       .from("pedidos")
@@ -43,7 +43,7 @@ export async function fetchAdminPedidos() {
       })
     );
 
-    console.log("✅ [fetchAdminPedidos] Pedidos completos:", pedidosConDatos.length);
+    
     return { data: pedidosConDatos, error: null };
   } catch (e) {
     console.error("💥 [fetchAdminPedidos] exception:", e);
@@ -54,7 +54,7 @@ export async function fetchAdminPedidos() {
 /** 🔄 Actualizar estado del pedido */
 export async function updatePedidoEstado(id, nuevoEstado) {
   try {
-    console.log(`🔄 [updatePedidoEstado] Pedido ${id} -> ${nuevoEstado}`);
+    
 
     const { error } = await supabase
       .from("pedidos")
@@ -66,7 +66,7 @@ export async function updatePedidoEstado(id, nuevoEstado) {
       return { error };
     }
 
-    console.log("✅ [updatePedidoEstado] Estado actualizado correctamente");
+    
     return { error: null };
   } catch (e) {
     console.error("💥 [updatePedidoEstado] exception:", e);

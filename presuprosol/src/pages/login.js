@@ -28,15 +28,15 @@ export default function Login() {
     setAlert(null);
 
     console.clear();
-    console.log("🔹 [LOGIN] Iniciando proceso de login...");
-    console.log("➡️ Email introducido:", email);
+    
+    
 
     try {
       const { data, error } = await signInWithEmailPassword({ email, password: pass });
       
       // Verificar si hubo error de autenticación
       if (error) {
-        console.log("[LOGIN] Error de autenticación capturado:", error.message);
+        
 
         if (error.message.includes("Invalid login credentials")) {
           show("error", "❌ Correo electrónico o contraseña incorrectos.");
@@ -64,10 +64,7 @@ export default function Login() {
       // Continuar con el proceso de login
       const { user } = data.session;
 
-      console.log("[LOGIN] ✅ Usuario autenticado:", {
-        id: user.id,
-        email: user.email,
-      });
+      
 
       // Buscar al usuario en administracion_usuarios POR EMAIL (API)
       let adminRow;
@@ -86,7 +83,7 @@ export default function Login() {
         return;
       }
 
-      console.log("[LOGIN] Datos de administración encontrados:", adminRow);
+      
 
       // No hay fila en administracion_usuarios con ese email
       if (!adminRow) {
@@ -113,7 +110,7 @@ export default function Login() {
         user.id
       );
 
-      console.log("[LOGIN] Perfil de usuario:", perfil);
+      
 
       if (perfilErr) {
         console.error(
@@ -124,12 +121,8 @@ export default function Login() {
 
       // Si no existe fila en usuarios, la creamos mediante la API
       if (!perfil) {
-        console.log("[LOGIN] 📝 Creando perfil de usuario...");
         try {
           await createPerfilUsuarioDesdeAdmin(user.id, adminRow);
-          console.log(
-            "[LOGIN] ✅ Perfil de usuario creado correctamente (API)"
-          );
         } catch (insertErr) {
           console.error(
             "[LOGIN] ⚠️ Error creando perfil de usuario (API):",
@@ -139,7 +132,7 @@ export default function Login() {
       }
 
       // Todo OK -> Bienvenida y redirección
-      console.log("[LOGIN] 🎉 Login exitoso");
+      
       show("ok", `¡Bienvenido/a, ${adminRow.usuario}! 🎉`);
 
       // Usar router de Next.js en vez de window.location para evitar recargas innecesarias
