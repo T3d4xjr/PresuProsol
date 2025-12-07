@@ -127,8 +127,12 @@ export default function UsuariosAdmin() {
     const n = Number(
       String(nuevoValor).replace(",", ".").replace(/[^\d.]/g, "")
     );
-    if (Number.isNaN(n) || n < 0 || n > 100) {
-      setMsg("❗ Descuento inválido (0–100%)");
+    if (Number.isNaN(n) || n < 0) {
+      setMsg("❗ El descuento no puede ser negativo");
+      return;
+    }
+    if (n > 50) {
+      setMsg("❗ El descuento no puede superar el 50%");
       return;
     }
 

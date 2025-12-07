@@ -6,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import ModalPago from "../components/ModalPago";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import {
   fetchPresupuestosUsuario,
   eliminarPresupuesto,
@@ -25,6 +24,9 @@ export default function MisPresupuestos() {
   const [filtroPrecio, setFiltroPrecio] = useState("todos");
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [ordenamiento, setOrdenamiento] = useState("fecha-desc");
+  const [mostrarModalDesactualizado, setMostrarModalDesactualizado] = useState(false);
+  const [presupuestoDesactualizado, setPresupuestoDesactualizado] = useState(null);
+  const [accionDesactualizado, setAccionDesactualizado] = useState(null);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -89,15 +91,22 @@ export default function MisPresupuestos() {
     }
 
     if (presupuesto.precio_desactualizado) {
-      const confirmar = confirm(
-        "⚠️ ATENCIÓN: Los precios de este presupuesto están desactualizados\n\n" +
-        "Si editas este presupuesto, se recalcularán con los nuevos precios del catálogo.\n\n" +
-        "¿Deseas continuar?"
-      );
-      if (!confirmar) return;
+      setPresupuestoDesactualizado(presupuesto);
+      setAccionDesactualizado('editar');
+      setMostrarModalDesactualizado(true);
+      return;
     }
 
     router.push(`/editar-presupuesto/${presupuesto.id}`);
+  }
+
+  function confirmarEdicionDesactualizada() {
+    if (presupuestoDesactualizado) {
+      router.push(`/editar-presupuesto/${presupuestoDesactualizado.id}`);
+    }
+    setMostrarModalDesactualizado(false);
+    setPresupuestoDesactualizado(null);
+    setAccionDesactualizado(null);
   }
 
   function abrirModalPago(presupuesto) {
@@ -107,10 +116,9 @@ export default function MisPresupuestos() {
     }
 
     if (presupuesto.precio_desactualizado) {
-      alert(
-        "⚠️ ATENCIÓN: Los precios de este presupuesto están desactualizados\n\n" +
-        "Por favor, edita el presupuesto para actualizar los precios antes de pagar."
-      );
+      setPresupuestoDesactualizado(presupuesto);
+      setAccionDesactualizado('pagar');
+      setMostrarModalDesactualizado(true);
       return;
     }
 
@@ -131,167 +139,7 @@ export default function MisPresupuestos() {
 
   async function generarPDF(presupuesto) {
     try {
-      const contenedor = document.createElement("div");
-      contenedor.style.position = "absolute";
-      contenedor.style.left = "-9999px";
-      contenedor.style.width = "210mm";
-      contenedor.style.padding = "20mm";
-      contenedor.style.backgroundColor = "white";
-      contenedor.style.fontFamily = "Arial, sans-serif";
-
-      contenedor.innerHTML = `
-        <div style="max-width: 800px; margin: 0 auto;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2c3e50; margin-bottom: 10px; font-weight: bold; font-size: 32px;">PRESUPUESTO</h1>
-            <p style="color: #7f8c8d; font-size: 14px;">PresuProsol - Soluciones Profesionales</p>
-          </div>
-
-          <div style="border: 2px solid #3498db; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px;">Información del Cliente</h2>
-            <table style="width: 100%; font-size: 14px;">
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d; width: 150px;">Cliente:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.cliente || "N/A"}</td>
-              </tr>
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">Email:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.email || "N/A"}</td>
-              </tr>
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">CIF:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.cif || "N/A"}</td>
-              </tr>
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">Fecha:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${new Date(presupuesto.created_at).toLocaleDateString("es-ES")}</td>
-              </tr>
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">Tipo:</td>
-                <td style="padding: 5px 0; font-weight: bold; text-transform: capitalize;">${presupuesto.tipo || "N/A"}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="border: 2px solid #2ecc71; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px;">Detalles del Producto</h2>
-            <table style="width: 100%; font-size: 14px;">
-              ${presupuesto.alto_mm ? `
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d; width: 150px;">Alto:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.alto_mm} mm</td>
-              </tr>
-              ` : ''}
-              ${presupuesto.ancho_mm ? `
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">Ancho:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.ancho_mm} mm</td>
-              </tr>
-              ` : ''}
-              ${presupuesto.color ? `
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">Color:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.color}</td>
-              </tr>
-              ` : ''}
-              ${presupuesto.medida_precio ? `
-              <tr>
-                <td style="padding: 5px 0; color: #7f8c8d;">Precio medida:</td>
-                <td style="padding: 5px 0; font-weight: bold;">${presupuesto.medida_precio.toFixed(2)} €</td>
-              </tr>
-              ` : ''}
-            </table>
-          </div>
-
-          ${presupuesto.accesorios && presupuesto.accesorios.length > 0 ? `
-          <div style="border: 2px solid #e74c3c; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px;">Accesorios</h2>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-              <thead>
-                <tr style="background-color: #ecf0f1;">
-                  <th style="padding: 10px; text-align: left; border-bottom: 2px solid #bdc3c7;">Descripción</th>
-                  <th style="padding: 10px; text-align: center; border-bottom: 2px solid #bdc3c7;">Unidades</th>
-                  <th style="padding: 10px; text-align: right; border-bottom: 2px solid #bdc3c7;">Precio Unit.</th>
-                  <th style="padding: 10px; text-align: right; border-bottom: 2px solid #bdc3c7;">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${presupuesto.accesorios
-                  .map(
-                    (acc) => `
-                <tr>
-                  <td style="padding: 8px; border-bottom: 1px solid #ecf0f1;">${
-                    acc.nombre || "Accesorio"
-                  }</td>
-                  <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ecf0f1;">${
-                    acc.unidades || 0
-                  }</td>
-                  <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ecf0f1;">${(
-                    acc.precio_unit || 0
-                  ).toFixed(2)} €</td>
-                  <td style="padding: 8px; text-align: right; border-bottom: 1px solid #ecf0f1; font-weight: bold;">${(
-                    (acc.unidades || 0) * (acc.precio_unit || 0)
-                  ).toFixed(2)} €</td>
-                </tr>
-                `
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-          ` : ''}
-
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 20px; color: white;">
-            <h2 style="font-size: 18px; margin-bottom: 15px;">Resumen Financiero</h2>
-            <table style="width: 100%; font-size: 16px;">
-              <tr>
-                <td style="padding: 8px 0;">Subtotal:</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: bold;">${(presupuesto.subtotal || 0).toFixed(2)} €</td>
-              </tr>
-              ${
-                presupuesto.descuento_cliente > 0
-                  ? `
-              <tr>
-                <td style="padding: 8px 0;">Descuento (${presupuesto.descuento_cliente}%):</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #ffeaa7;">-${(
-                  (presupuesto.subtotal || 0) *
-                  (presupuesto.descuento_cliente / 100)
-                ).toFixed(2)} €</td>
-              </tr>
-              `
-                  : ""
-              }
-              <tr style="border-top: 2px solid rgba(255,255,255,0.3);">
-                <td style="padding: 12px 0; font-size: 20px; font-weight: bold;">TOTAL:</td>
-                <td style="padding: 12px 0; text-align: right; font-size: 24px; font-weight: bold;">${(presupuesto.total || 0).toFixed(2)} €</td>
-              </tr>
-              <tr>
-                <td colspan="2" style="padding-top: 10px; font-size: 14px; opacity: 0.8;">
-                  Estado: ${presupuesto.pagado ? "✅ PAGADO" : "⏳ Pendiente de pago"}
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ecf0f1; text-align: center; color: #7f8c8d; font-size: 12px;">
-            <p>PresuProsol</p>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(contenedor);
-
-      const canvas = await html2canvas(contenedor, {
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: contenedor.scrollWidth,
-        windowHeight: contenedor.scrollHeight,
-      });
-
-      document.body.removeChild(contenedor);
-
-      const imgData = canvas.toDataURL("image/png");
+      // Crear PDF directamente con jsPDF sin html2canvas
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -300,26 +148,238 @@ export default function MisPresupuestos() {
 
       const pageWidth = 210;
       const pageHeight = 297;
-      const margin = 10;
+      const margin = 20;
       const contentWidth = pageWidth - margin * 2;
+      let yPos = margin;
 
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Función auxiliar para agregar nueva página si es necesario
+      const checkPageBreak = (requiredSpace) => {
+        if (yPos + requiredSpace > pageHeight - margin) {
+          pdf.addPage();
+          yPos = margin;
+          return true;
+        }
+        return false;
+      };
 
-      let heightLeft = imgHeight;
-      let position = margin;
-      let page = 1;
+      // Función para agregar texto con wrap
+      const addText = (text, x, y, options = {}) => {
+        const fontSize = options.fontSize || 10;
+        const fontStyle = options.fontStyle || 'normal';
+        const align = options.align || 'left';
+        const maxWidth = options.maxWidth || contentWidth;
+        
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', fontStyle);
+        
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        pdf.text(lines, x, y, { align });
+        
+        return lines.length * (fontSize * 0.4); // Retorna altura usada
+      };
 
-      pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight - margin * 2;
+      // HEADER - TÍTULO
+      pdf.setFillColor(52, 152, 219);
+      pdf.rect(margin, yPos, contentWidth, 25, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('PRESUPUESTO', pageWidth / 2, yPos + 12, { align: 'center' });
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('PresuProsol - Soluciones Profesionales', pageWidth / 2, yPos + 19, { align: 'center' });
+      yPos += 30;
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight + margin;
-        pdf.addPage();
-        page++;
-        pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight - margin * 2;
+      // INFORMACIÓN DEL CLIENTE
+      checkPageBreak(50);
+      pdf.setDrawColor(52, 152, 219);
+      pdf.setLineWidth(0.5);
+      pdf.rect(margin, yPos, contentWidth, 45);
+      
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Información del Cliente', margin + 5, yPos + 8);
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      let clienteY = yPos + 16;
+      
+      pdf.setTextColor(127, 140, 141);
+      pdf.text('Cliente:', margin + 5, clienteY);
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(presupuesto.cliente || "N/A", margin + 40, clienteY);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(127, 140, 141);
+      pdf.text('Email:', margin + 5, clienteY + 7);
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(presupuesto.email || "N/A", margin + 40, clienteY + 7);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(127, 140, 141);
+      pdf.text('CIF:', margin + 5, clienteY + 14);
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(presupuesto.cif || "N/A", margin + 40, clienteY + 14);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(127, 140, 141);
+      pdf.text('Fecha:', margin + 5, clienteY + 21);
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(new Date(presupuesto.created_at).toLocaleDateString("es-ES"), margin + 40, clienteY + 21);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(127, 140, 141);
+      pdf.text('Tipo:', margin + 5, clienteY + 28);
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text((presupuesto.tipo || "N/A").toUpperCase(), margin + 40, clienteY + 28);
+      
+      yPos += 52;
+
+      // DETALLES DEL PRODUCTO
+      checkPageBreak(40);
+      pdf.setDrawColor(46, 204, 113);
+      pdf.rect(margin, yPos, contentWidth, 35);
+      
+      pdf.setTextColor(44, 62, 80);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Detalles del Producto', margin + 5, yPos + 8);
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      let detalleY = yPos + 16;
+      
+      if (presupuesto.alto_mm) {
+        pdf.setTextColor(127, 140, 141);
+        pdf.text('Alto:', margin + 5, detalleY);
+        pdf.setTextColor(44, 62, 80);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${presupuesto.alto_mm} mm`, margin + 40, detalleY);
+        pdf.setFont('helvetica', 'normal');
+        detalleY += 7;
       }
+      
+      if (presupuesto.ancho_mm) {
+        pdf.setTextColor(127, 140, 141);
+        pdf.text('Ancho:', margin + 5, detalleY);
+        pdf.setTextColor(44, 62, 80);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${presupuesto.ancho_mm} mm`, margin + 40, detalleY);
+        pdf.setFont('helvetica', 'normal');
+        detalleY += 7;
+      }
+      
+      if (presupuesto.color) {
+        pdf.setTextColor(127, 140, 141);
+        pdf.text('Color:', margin + 5, detalleY);
+        pdf.setTextColor(44, 62, 80);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(presupuesto.color, margin + 40, detalleY);
+        pdf.setFont('helvetica', 'normal');
+      }
+      
+      yPos += 42;
+
+      // ACCESORIOS (si existen)
+      if (presupuesto.accesorios && presupuesto.accesorios.length > 0) {
+        const tableHeight = 15 + (presupuesto.accesorios.length * 8);
+        checkPageBreak(tableHeight + 15);
+        
+        pdf.setDrawColor(231, 76, 60);
+        pdf.rect(margin, yPos, contentWidth, tableHeight);
+        
+        pdf.setTextColor(44, 62, 80);
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Accesorios', margin + 5, yPos + 8);
+        
+        yPos += 15;
+        
+        // Cabecera de tabla
+        pdf.setFillColor(236, 240, 241);
+        pdf.rect(margin + 2, yPos, contentWidth - 4, 8, 'F');
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(44, 62, 80);
+        pdf.text('Descripción', margin + 5, yPos + 5.5);
+        pdf.text('Uds', margin + 110, yPos + 5.5, { align: 'center' });
+        pdf.text('P. Unit.', margin + 140, yPos + 5.5, { align: 'right' });
+        pdf.text('Total', margin + contentWidth - 5, yPos + 5.5, { align: 'right' });
+        
+        yPos += 8;
+        
+        // Filas de accesorios
+        pdf.setFont('helvetica', 'normal');
+        presupuesto.accesorios.forEach((acc) => {
+          pdf.setFontSize(9);
+          pdf.text(acc.nombre || "Accesorio", margin + 5, yPos + 5);
+          pdf.text(String(acc.unidades || 0), margin + 110, yPos + 5, { align: 'center' });
+          pdf.text(`${(acc.precio_unit || 0).toFixed(2)} €`, margin + 140, yPos + 5, { align: 'right' });
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${((acc.unidades || 0) * (acc.precio_unit || 0)).toFixed(2)} €`, margin + contentWidth - 5, yPos + 5, { align: 'right' });
+          pdf.setFont('helvetica', 'normal');
+          yPos += 8;
+        });
+        
+        yPos += 7;
+      }
+
+      // RESUMEN FINANCIERO
+      checkPageBreak(45);
+      pdf.setFillColor(102, 126, 234);
+      pdf.rect(margin, yPos, contentWidth, 40, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Resumen Financiero', margin + 5, yPos + 8);
+      
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      let resumenY = yPos + 16;
+      
+      pdf.text('Subtotal:', margin + 5, resumenY);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${(presupuesto.subtotal || 0).toFixed(2)} €`, margin + contentWidth - 5, resumenY, { align: 'right' });
+      
+      if (presupuesto.descuento_cliente > 0) {
+        resumenY += 7;
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Descuento (${presupuesto.descuento_cliente}%):`, margin + 5, resumenY);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(255, 234, 167);
+        pdf.text(`-${((presupuesto.subtotal || 0) * (presupuesto.descuento_cliente / 100)).toFixed(2)} €`, margin + contentWidth - 5, resumenY, { align: 'right' });
+        pdf.setTextColor(255, 255, 255);
+      }
+      
+      resumenY += 9;
+      pdf.setDrawColor(255, 255, 255);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin + 5, resumenY - 2, margin + contentWidth - 5, resumenY - 2);
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('TOTAL:', margin + 5, resumenY + 5);
+      pdf.setFontSize(18);
+      pdf.text(`${(presupuesto.total || 0).toFixed(2)} €`, margin + contentWidth - 5, resumenY + 5, { align: 'right' });
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Estado: ${presupuesto.pagado ? "✓ PAGADO" : "○ Pendiente de pago"}`, margin + 5, resumenY + 12);
+      
+      yPos += 47;
+
+      // FOOTER
+      pdf.setTextColor(127, 140, 141);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'italic');
+      pdf.text('PresuProsol - Documento generado automáticamente', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
       const fileName = `presupuesto-${
         presupuesto.cliente?.replace(/\s+/g, "-") ||
@@ -727,6 +787,82 @@ export default function MisPresupuestos() {
           onClose={cerrarModalPago}
           onSuccess={onPagoExitoso}
         />
+      )}
+
+      {/* Modal de precios desactualizados */}
+      {mostrarModalDesactualizado && presupuestoDesactualizado && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => {
+            setMostrarModalDesactualizado(false);
+            setPresupuestoDesactualizado(null);
+            setAccionDesactualizado(null);
+          }}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`${styles.modalHeader} ${styles.modalHeaderWarning}`}>
+              <h5 className={styles.modalTitle}>⚠️ Precios Desactualizados</h5>
+              <button
+                className={styles.closeButton}
+                onClick={() => {
+                  setMostrarModalDesactualizado(false);
+                  setPresupuestoDesactualizado(null);
+                  setAccionDesactualizado(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.warningIconLarge}>⚠️</div>
+              <h6 className={styles.modalTextLarge}>
+                Los precios de este presupuesto están desactualizados
+              </h6>
+              {accionDesactualizado === 'editar' ? (
+                <div className={styles.modalMessage}>
+                  <p style={{ margin: '0 0 1rem 0' }}>
+                    Si editas este presupuesto, se <strong>recalcularán automáticamente</strong> con los nuevos precios del catálogo.
+                  </p>
+                  <p style={{ margin: '0', color: '#666' }}>
+                    ¿Deseas continuar con la edición?
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.modalMessage}>
+                  <p style={{ margin: '0 0 1rem 0' }}>
+                    No puedes pagar un presupuesto con precios desactualizados.
+                  </p>
+                  <p style={{ margin: '0', color: '#666' }}>
+                    Por favor, <strong>edita el presupuesto</strong> primero para actualizar los precios.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={`${styles.btn} ${styles.btnSecondary}`}
+                onClick={() => {
+                  setMostrarModalDesactualizado(false);
+                  setPresupuestoDesactualizado(null);
+                  setAccionDesactualizado(null);
+                }}
+              >
+                Cancelar
+              </button>
+              {accionDesactualizado === 'editar' && (
+                <button
+                  className={`${styles.btn} ${styles.btnWarning}`}
+                  onClick={confirmarEdicionDesactualizada}
+                >
+                  Sí, continuar editando
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

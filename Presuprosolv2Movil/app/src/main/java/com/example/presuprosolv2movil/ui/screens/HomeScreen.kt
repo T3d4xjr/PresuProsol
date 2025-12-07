@@ -92,12 +92,13 @@ fun HomeScreen(
             )
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
-        ) {
-            Header(onMenuClick = { scope.launch { drawerState.open() } })
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF5F5F5))
+            ) {
+                Header(onMenuClick = { scope.launch { drawerState.open() } })
 
             LazyColumn(
                 modifier = Modifier
@@ -141,6 +142,39 @@ fun HomeScreen(
                 }
             }
         }
+
+        // Botón flotante de Mis Presupuestos (solo si está autenticado)
+        if (isAuthenticated) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                BadgedBox(
+                    badge = {
+                        Badge(
+                            containerColor = Color.Red,
+                            contentColor = Color.White
+                        )
+                    }
+                ) {
+                    FloatingActionButton(
+                        onClick = { navController.navigate(Screen.MisPresupuestos.route) },
+                        containerColor = Color(0xFFFF6600),
+                        contentColor = Color.White,
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.ShoppingCart,
+                            contentDescription = "Mis presupuestos",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
 
         // Alerta de login
         if (showAlert) {

@@ -414,8 +414,67 @@ export default function AdminProductos() {
         }
       }
 
+      // Validar que no exista duplicado de clave en compactos_acabados
+      if (tablaSeleccionada.nombre === "compactos_acabados" && formData.clave) {
+        const { data: existente } = await supabase
+          .from("compactos_acabados")
+          .select("id")
+          .eq("clave", formData.clave)
+          .maybeSingle();
+        
+        if (existente) {
+          mostrarAlertaPersonalizada(`⚠️ Ya existe un acabado con la clave "${formData.clave}"`, "warning");
+          return;
+        }
+      }
+
+      // Validar tipo en panos_modelos (solo 'persiana' o 'lama')
+      if (tablaSeleccionada.nombre === "panos_modelos" && formData.tipo) {
+        const tipoLower = formData.tipo.toLowerCase();
+        if (tipoLower !== "persiana" && tipoLower !== "lama") {
+          mostrarAlertaPersonalizada(`⚠️ El tipo debe ser "persiana" o "lama"`, "warning");
+          return;
+        }
+        // Normalizar el valor
+        formData.tipo = tipoLower;
+      }
+
       // Asegurar que precios tengan valor 0 por defecto (solo para tablas NO de precios)
       const dataToInsert = { ...formData };
+      if (!esTablaPrecios) {
+        columnas.forEach(col => {
+          if ((col.includes("precio") || col.includes("pvp") || col.includes("incremento") || col === "precio_base") 
+              && (dataToInsert[col] === null || dataToInsert[col] === undefined || dataToInsert[col] === "")) {
+            dataToInsert[col] = 0;
+          }
+        });
+      }
+
+      // Convertir todos los valores numéricos de string a número
+      columnas.forEach(col => {
+        const value = dataToInsert[col];
+        if (value !== null && value !== undefined && value !== "") {
+          // Precios y valores decimales
+          if (col.includes("precio") || col.includes("pvp") || col.includes("incremento") || col.includes("_m2") || col.includes("_ml")) {
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) {
+              dataToInsert[col] = numValue;
+            }
+          }
+          // Medidas en mm y otros integers
+          else if (col.includes("_mm") || col === "orden" || col === "alto" || col === "ancho" || col === "fondo") {
+            const intValue = parseInt(value);
+            if (!isNaN(intValue)) {
+              // Validar rango de integer de PostgreSQL (-2147483648 a 2147483647)
+              if (intValue < -2147483648 || intValue > 2147483647) {
+                mostrarAlertaPersonalizada(`⚠️ El valor ${intValue} está fuera del rango permitido para ${col}`, "warning");
+                return;
+              }
+              dataToInsert[col] = intValue;
+            }
+          }
+        }
+      });
       if (!esTablaPrecios) {
         columnas.forEach(col => {
           if ((col.includes("precio") || col.includes("pvp") || col.includes("incremento") || col === "precio_base") 
@@ -448,9 +507,46 @@ export default function AdminProductos() {
 
   async function guardarEdicion() {
     try {
+      // Validar tipo en panos_modelos
+      if (tablaSeleccionada.nombre === "panos_modelos" && formData.tipo) {
+        const tipoLower = formData.tipo.toLowerCase();
+        if (tipoLower !== "persiana" && tipoLower !== "lama") {
+          mostrarAlertaPersonalizada(`⚠️ El tipo debe ser "persiana" o "lama"`, "warning");
+          return;
+        }
+        formData.tipo = tipoLower;
+      }
+
+      // Convertir y validar valores numéricos
+      const dataToUpdate = { ...formData };
+      columnas.forEach(col => {
+        const value = dataToUpdate[col];
+        if (value !== null && value !== undefined && value !== "") {
+          // Precios y valores decimales
+          if (col.includes("precio") || col.includes("pvp") || col.includes("incremento") || col.includes("_m2") || col.includes("_ml")) {
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) {
+              dataToUpdate[col] = numValue;
+            }
+          }
+          // Medidas en mm y otros integers
+          else if (col.includes("_mm") || col === "orden" || col === "alto" || col === "ancho" || col === "fondo") {
+            const intValue = parseInt(value);
+            if (!isNaN(intValue)) {
+              // Validar rango de integer de PostgreSQL
+              if (intValue < -2147483648 || intValue > 2147483647) {
+                mostrarAlertaPersonalizada(`⚠️ El valor ${intValue} está fuera del rango permitido para ${col}`, "warning");
+                return;
+              }
+              dataToUpdate[col] = intValue;
+            }
+          }
+        }
+      });
+
       const { error } = await supabase
         .from(tablaSeleccionada.nombre)
-        .update(formData)
+        .update(dataToUpdate)
         .eq("id", itemEditar.id);
 
       if (error) throw error;
@@ -527,18 +623,35 @@ export default function AdminProductos() {
         }
       } else if (tablaSeleccionada.nombre.includes("_medidas")) {
         const categoria = tablaSeleccionada.nombre.split("_")[0];
-        const tablaPrecio = `${categoria}_precios`;
         
-        
-        
-        const { error: errorPrecio } = await supabase
-          .from(tablaPrecio)
-          .delete()
-          .eq("medida_id", itemEliminar.id);
-        
-        if (errorPrecio) {
-          console.error("Error eliminando precios:", errorPrecio);
-          throw new Error(`No se pudieron eliminar los precios relacionados: ${errorPrecio.message}`);
+        // Mosquiteras no tienen tabla de precios separada, los precios están en mosq_medidas
+        if (categoria === "mosq") {
+          // No hay tabla mosq_precios, los precios están directamente en mosq_medidas
+          console.log("Mosquiteras: precios en la misma tabla, no hay referencias que eliminar");
+        } else if (categoria === "pergolas") {
+          // Pérgolas: usar ancho_mm y fondo_mm para eliminar precios
+          const { error: errorPrecio } = await supabase
+            .from("pergolas_precios")
+            .delete()
+            .eq("ancho_mm", itemEliminar.ancho_mm)
+            .eq("fondo_mm", itemEliminar.fondo_mm);
+          
+          if (errorPrecio) {
+            console.error("Error eliminando precios:", errorPrecio);
+            throw new Error(`No se pudieron eliminar los precios relacionados: ${errorPrecio.message}`);
+          }
+        } else if (categoria === "puertas") {
+          // Puertas: usar ancho_mm y alto_mm para eliminar precios
+          const { error: errorPrecio } = await supabase
+            .from("puertas_precios")
+            .delete()
+            .eq("ancho_mm", itemEliminar.ancho_mm)
+            .eq("alto_mm", itemEliminar.alto_mm);
+          
+          if (errorPrecio) {
+            console.error("Error eliminando precios:", errorPrecio);
+            throw new Error(`No se pudieron eliminar los precios relacionados: ${errorPrecio.message}`);
+          }
         }
       }
 
