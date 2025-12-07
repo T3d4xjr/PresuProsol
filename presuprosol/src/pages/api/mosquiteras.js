@@ -1,6 +1,34 @@
 // src/pages/api/mosquiteras.js
 import { supabase } from "../../lib/supabaseClient";
 
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Método no permitido' });
+  }
+
+  const { table } = req.query;
+
+  try {
+    if (table === 'medidas') {
+      const result = await fetchMosqMedidas();
+      return res.status(200).json(result);
+    }
+
+    if (table === 'options') {
+      const result = await fetchMosqOptions();
+      return res.status(200).json(result);
+    }
+
+    // Por defecto devolver todo
+    const medidas = await fetchMosqMedidas();
+    const options = await fetchMosqOptions();
+    return res.status(200).json({ medidas, ...options });
+  } catch (err) {
+    console.error("Error en handler mosquiteras:", err);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
 /* ========= Helpers internos ========= */
 
 function guessHexFromName(nombre = "") {

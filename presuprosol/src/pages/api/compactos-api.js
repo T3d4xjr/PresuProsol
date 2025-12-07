@@ -1,6 +1,20 @@
 // src/pages/api/compactos-api.js
 import { supabase } from "../../lib/supabaseClient";
 
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Método no permitido' });
+  }
+
+  try {
+    const catalog = await fetchCompactosCatalog();
+    return res.status(200).json(catalog);
+  } catch (err) {
+    console.error("Error en handler compactos:", err);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
 /** ================================
  * 📦 Cargar catálogo compactos
  * ================================ */

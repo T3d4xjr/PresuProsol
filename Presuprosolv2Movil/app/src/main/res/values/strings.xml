@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">PresuProsol</string>
+    <string name="hero_title">Presupuesto de persianas al instante</string>
+    <string name="hero_subtitle">Configura, calcula y pide tus persianas en pocos pasos</string>
+    <string name="hero_button">Empieza tu presupuesto</string>
+    <string name="services_title">Servicios</string>
+    <string name="map_title">Encuéntranos</string>
+    <string name="map_subtitle">Visítanos o revisa nuestra ubicación en Google Maps</string>
+    <string name="map_button">Ver en Google Maps</string>
+    <string name="see_more">Ver más</string>
+    <string name="back">Volver</string>
+    <string name="menu">Menú</string>
+    <string name="under_construction">En construcción</string>
+
+    <!-- Servicios -->
+    <string name="service_mosquiteras">Mosquiteras</string>
+    <string name="service_panos">Paños de persiana</string>
+    <string name="service_compacto">Persianas compacto</string>
+    <string name="service_proteccion_solar">Protección solar</string>
+    <string name="service_puertas_garaje">Puertas de garaje</string>
+    <string name="service_pergolas">Pérgola bioclimática</string>
+
+    <!-- Alerta de acceso -->
+    <string name="access_restricted_title">Acceso Restringido</string>
+    <string name="access_restricted_message">Necesitas iniciar sesión y estar habilitado para acceder a este contenido.</string>
+    <string name="understood">Entendido</string>
+</resources>

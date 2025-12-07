@@ -1,6 +1,27 @@
 // src/pages/api/proteccionSolar.js
 import { supabase } from "../../lib/supabaseClient";
 
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Método no permitido' });
+  }
+
+  const { table } = req.query;
+
+  try {
+    if (table === 'combinaciones') {
+      const combinaciones = await fetchCombinacionesProteccionSolar();
+      return res.status(200).json({ combinaciones });
+    }
+
+    const catalog = await fetchCatalogoProteccionSolar();
+    const combinaciones = await fetchCombinacionesProteccionSolar();
+    return res.status(200).json({ ...catalog, combinaciones });
+  } catch (err) {
+    console.error("Error en handler protección solar:", err);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
 
 export async function fetchCatalogoProteccionSolar() {
   

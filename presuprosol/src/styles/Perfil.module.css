@@ -202,3 +202,14 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.btnOutlineDanger {
+  background: transparent;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btnOutlineDanger:hover {
+  background: #dc3545;
+  color: white;
+}

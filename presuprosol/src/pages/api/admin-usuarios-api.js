@@ -1,7 +1,34 @@
 // src/pages/api/admin-usuarios-api.js
 import { supabase } from "../../lib/supabaseClient";
 
-/** 📥 Listar usuarios de administración */
+/** 📥 Handler API: listar usuarios de administración */
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Método no permitido" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("administracion_usuarios")
+      .select("id, usuario, email, cif, rol, habilitado, created_at, descuento")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error cargando admin_usuarios:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Igual que en faqs.js, pero aquí devolvemos 'usuarios'
+    return res.status(200).json({ usuarios: data || [] });
+  } catch (err) {
+    console.error("Error en handler admin-usuarios-api:", err);
+    return res
+      .status(500)
+      .json({ error: "Error interno del servidor" });
+  }
+}
+
+/** 📥 Listar usuarios de administración (uso interno en el código) */
 export async function fetchAdminUsuarios() {
   try {
     const { data, error } = await supabase

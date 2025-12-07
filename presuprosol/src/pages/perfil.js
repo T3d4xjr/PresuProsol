@@ -161,6 +161,15 @@ export default function Perfil() {
                 🏷️ Productos
               </button>
             )}
+
+            {/* 📱 Descargar App Móvil */}
+            <a
+              href="/apk/PresuProsol.apk"
+              download="PresuProsol.apk"
+              className={`${styles.btn} ${styles.btnOutlineDanger}`}
+            >
+              📱 App Móvil
+            </a>
           </div>
         </div>
 
